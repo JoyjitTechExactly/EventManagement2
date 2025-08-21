@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.eventmanagement2.R
 import com.example.eventmanagement2.databinding.FragmentSplashBinding
@@ -25,7 +26,7 @@ class SplashFragment : Fragment() {
 
     private var _binding: FragmentSplashBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
@@ -39,7 +40,7 @@ class SplashFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         // Delay for the splash screen
         Handler(Looper.getMainLooper()).postDelayed({
             checkAuthState()
@@ -53,12 +54,22 @@ class SplashFragment : Fragment() {
                     when (state) {
                         is com.example.eventmanagement2.data.model.AuthState.Authenticated -> {
                             // Navigate to dashboard if authenticated
-                            findNavController().navigate(R.id.action_splashFragment_to_dashboardFragment)
+                            val navOptions = NavOptions.Builder()
+                                .setPopUpTo(R.id.splashFragment, true)
+                                .build()
+
+                            findNavController().navigate(
+                                R.id.action_splashFragment_to_dashboardFragment,
+                                null,
+                                navOptions
+                            )
                         }
+
                         is com.example.eventmanagement2.data.model.AuthState.Unauthenticated -> {
                             // Navigate to login if not authenticated
                             findNavController().navigate(R.id.action_splashFragment_to_loginFragment)
                         }
+
                         else -> {
                             // Handle other states if needed
                         }

@@ -45,13 +45,22 @@ class AuthViewModel @Inject constructor(
                     _errorMessage.value = e.message
                     _isLoading.value = false
                 }
-                .collectLatest { state ->
+                .collect { state ->
                     _authState.value = state
                     _isLoading.value = state is AuthState.Loading
                     
-                    // Clear error when we get a new state that's not an error
-                    if (state !is AuthState.Error) {
-                        _errorMessage.value = null
+                    when (state) {
+                        is AuthState.Error -> {
+                            _errorMessage.value = state.message
+                        }
+                        is AuthState.Authenticated -> {
+                            // Clear any previous errors
+                            _errorMessage.value = null
+                        }
+                        else -> {
+                            // Clear error for other states
+                            _errorMessage.value = null
+                        }
                     }
                 }
         }
@@ -120,10 +129,19 @@ class AuthViewModel @Inject constructor(
 
     private fun handleAuthResult(result: AuthState) {
         _authState.value = result
-        _isLoading.value = result is AuthState.Loading
+        _isLoading.value = false // Always set loading to false when operation completes
         
-        if (result is AuthState.Error) {
-            _errorMessage.value = result.message
+        when (result) {
+            is AuthState.Error -> {
+                _errorMessage.value = result.message
+            }
+            is AuthState.Authenticated -> {
+                // Clear any previous errors
+                _errorMessage.value = null
+            }
+            else -> {
+                // Handle other states if needed
+            }
         }
     }
 }

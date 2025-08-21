@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.eventmanagement2.R
 import com.example.eventmanagement2.data.model.AuthState
 import com.example.eventmanagement2.data.model.User
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -90,8 +91,38 @@ class FirestoreAuthRepository @Inject constructor(
 
     override suspend fun signInWithEmailAndPassword(email: String, password: String): AuthState {
         return try {
-            auth.signInWithEmailAndPassword(email, password).await()
-            AuthState.Loading
+            // 1. Sign in with email and password
+            val authResult = auth.signInWithEmailAndPassword(email, password).await()
+            val userId = authResult.user?.uid ?: return AuthState.Error("Authentication failed")
+            
+            // 2. Fetch user data from Firestore
+            val userDoc = firestore.collection(context.getString(R.string.db_collection_users))
+                .document(userId)
+                .get()
+                .await()
+            
+            if (userDoc.exists()) {
+                val user = userDoc.toObject(User::class.java)
+                user?.let {
+                    AuthState.Authenticated(it)
+                } ?: AuthState.Error("User data not found")
+            } else {
+                // Create user data if it doesn't exist (shouldn't normally happen)
+                val newUser = User(
+                    id = userId,
+                    name = authResult.user?.displayName ?: "",
+                    email = email,
+                    createdAt = Timestamp.now(),
+                    updatedAt = Timestamp.now()
+                )
+                
+                firestore.collection(context.getString(R.string.db_collection_users))
+                    .document(userId)
+                    .set(newUser)
+                    .await()
+                    
+                AuthState.Authenticated(newUser)
+            }
         } catch (e: Exception) {
             when (e) {
                 is FirebaseAuthInvalidCredentialsException -> {
@@ -108,27 +139,28 @@ class FirestoreAuthRepository @Inject constructor(
         return try {
             // 1. Create user in Firebase Auth
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+            val userId = authResult.user?.uid ?: return AuthState.Error("Registration failed")
             
-            // 2. Create user data in Firestore
-            val user = User(
-                id = authResult.user?.uid ?: "",
-                name = name,
-                email = email,
-                createdAt = Date(),
-                updatedAt = Date()
-            )
-            
-            firestore.collection(context.getString(R.string.db_collection_users))
-                .document(user.id)
-                .set(user)
-                .await()
-            
-            // 3. Update user profile with display name
+            // 2. Update user profile with display name
             auth.currentUser?.updateProfile(
                 com.google.firebase.auth.UserProfileChangeRequest.Builder()
                     .setDisplayName(name)
                     .build()
             )?.await()
+            
+            // 3. Create user data in Firestore
+            val user = User(
+                id = userId,
+                name = name,
+                email = email,
+                createdAt = Timestamp.now(),
+                updatedAt = Timestamp.now()
+            )
+            
+            firestore.collection(context.getString(R.string.db_collection_users))
+                .document(userId)
+                .set(user)
+                .await()
             
             AuthState.Authenticated(user)
         } catch (e: Exception) {

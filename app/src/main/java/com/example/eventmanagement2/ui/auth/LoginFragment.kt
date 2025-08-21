@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.eventmanagement2.R
 import com.example.eventmanagement2.data.model.AuthState
@@ -77,12 +78,14 @@ class LoginFragment : Fragment() {
     private fun observeAuthState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe loading state
+                // Observe loading state from ViewModel
                 viewModel.isLoading.collect { isLoading ->
-                    binding.progressBar.isVisible = isLoading
-                    binding.buttonLogin.isEnabled = !isLoading
-                    binding.buttonSignup.isEnabled = !isLoading
-                    binding.buttonForgotPassword.isEnabled = !isLoading
+                    binding.apply {
+                        progressBar.isVisible = isLoading
+                        buttonLogin.isEnabled = !isLoading
+                        buttonSignup.isEnabled = !isLoading
+                        buttonForgotPassword.isEnabled = !isLoading
+                    }
                 }
             }
         }
@@ -92,9 +95,25 @@ class LoginFragment : Fragment() {
                 // Observe authentication state
                 viewModel.authState.collect { state ->
                     when (state) {
-                        is AuthState.Authenticated -> navigateToMain()
-                        is AuthState.Error -> showError(state.message)
-                        else -> { /* Handle other states if needed */ }
+                        is AuthState.Authenticated -> {
+                            // Navigate to dashboard on successful authentication
+                            navigateToMain()
+                        }
+                        is AuthState.Error -> {
+                            // Show error message if any
+                            if (state.message != null) {
+                                showError(state.message)
+                            }
+                        }
+                        AuthState.Loading -> {
+                            // Handle loading state if needed
+                        }
+                        AuthState.Unauthenticated -> {
+                            // User is not authenticated, stay on login screen
+                        }
+                        is AuthState.PasswordResetSent -> {
+                            // Handle password reset sent state if needed
+                        }
                     }
                 }
             }
@@ -167,7 +186,16 @@ class LoginFragment : Fragment() {
     }
 
     private fun navigateToMain() {
-        findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment)
+        // Clear back stack so user can't go back to login/signup screens
+        val navOptions = NavOptions.Builder()
+            .setPopUpTo(R.id.loginFragment, true)
+            .build()
+
+        findNavController().navigate(
+            R.id.action_loginFragment_to_dashboardFragment,
+            null,
+            navOptions
+        )
     }
 
     private fun navigateToSignUp() {

@@ -82,8 +82,8 @@ class DashboardFragment : Fragment() {
             }
             
             // Set up refresh FAB
-            fabRefresh.setOnClickListener {
-                viewModel.refresh()
+            btnAddEvent.setOnClickListener {
+                /*Navigate to add event page*/
             }
         }
     }

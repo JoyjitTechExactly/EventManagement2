@@ -69,7 +69,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="0"
-                                android:textColor="?android:attr/textColorPrimary"
+                                android:textColor="@color/white"
                                 tools:text="24" />
 
                             <TextView
@@ -77,7 +77,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/total_events"
                                 android:textAppearance="?attr/textAppearanceCaption"
-                                android:textColor="?android:attr/textColorSecondary" />
+                                android:textColor="@color/colorPrimary" />
                         </LinearLayout>
 
                         <!-- Upcoming Events -->
@@ -107,7 +107,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="0"
-                                android:textColor="?android:attr/textColorPrimary"
+                                android:textColor="@color/white"
                                 tools:text="8" />
 
                             <TextView
@@ -115,7 +115,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/upcoming"
                                 android:textAppearance="?attr/textAppearanceCaption"
-                                android:textColor="?android:attr/textColorSecondary" />
+                                android:textColor="@color/colorPrimary" />
                         </LinearLayout>
 
                         <!-- Past Events -->
@@ -145,7 +145,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="0"
-                                android:textColor="?android:attr/textColorPrimary"
+                                android:textColor="@color/white"
                                 tools:text="16" />
 
                             <TextView
@@ -153,7 +153,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/past"
                                 android:textAppearance="?attr/textAppearanceCaption"
-                                android:textColor="?android:attr/textColorSecondary" />
+                                android:textColor="@color/colorPrimary" />
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -178,7 +178,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="16dp"
                             android:text="@string/events_by_month"
-                            android:textColor="?android:attr/textColorPrimary" />
+                            android:textColor="@color/colorPrimary" />
 
                         <com.github.mikephil.charting.charts.BarChart
                             android:id="@+id/eventsByMonthChart"
@@ -207,7 +207,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="16dp"
                             android:text="@string/events_by_category"
-                            android:textColor="?android:attr/textColorPrimary" />
+                            android:textColor="@color/colorPrimary" />
 
                         <com.github.mikephil.charting.charts.PieChart
                             android:id="@+id/eventsByCategoryChart"
@@ -233,13 +233,13 @@
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabRefresh"
+        android:id="@+id/btnAddEvent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="@string/refresh"
-        app:srcCompat="@drawable/ic_refresh"
+        app:srcCompat="@drawable/ic_add"
         app:tint="@color/white" />
 
     <ProgressBar
