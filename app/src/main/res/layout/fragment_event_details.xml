@@ -52,7 +52,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:textColor="?android:attr/textColorPrimary"
+                android:textColor="@color/colorPrimary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -83,7 +83,7 @@
                         android:drawableStart="@drawable/ic_date_time"
                         android:text="@string/date_and_time"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                        android:textColor="?android:attr/textColorPrimary" />
+                        android:textColor="@color/mdtp_light_gray" />
 
                     <TextView
                         android:id="@+id/textDateTime"
@@ -91,7 +91,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="32dp"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                        android:textColor="?android:attr/textColorSecondary"
+                        android:textColor="@color/white"
                         tools:text="Fri, 15 Oct 2023, 14:30 - 16:30" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -121,7 +121,7 @@
                         android:drawableStart="@drawable/ic_location_on"
                         android:text="@string/location"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                        android:textColor="?android:attr/textColorPrimary" />
+                        android:textColor="@color/mdtp_light_gray" />
 
                     <TextView
                         android:id="@+id/textLocation"
@@ -129,7 +129,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="32dp"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                        android:textColor="?android:attr/textColorSecondary"
+                        android:textColor="@color/white"
                         tools:text="Conference Room A, 123 Main St, New York, NY 10001" />
 
                     <com.google.android.material.button.MaterialButton
@@ -167,7 +167,7 @@
                         android:drawableStart="@drawable/ic_description"
                         android:text="@string/description"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                        android:textColor="?android:attr/textColorPrimary" />
+                        android:textColor="@color/mdtp_light_gray" />
 
                     <TextView
                         android:id="@+id/textDescription"
@@ -175,7 +175,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="32dp"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                        android:textColor="?android:attr/textColorSecondary"
+                        android:textColor="@color/white"
                         tools:text="This is a detailed description of the event. It provides all the necessary information about what will happen during the event, who the speakers are, and what attendees can expect to learn or experience." />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

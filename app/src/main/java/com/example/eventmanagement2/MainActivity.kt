@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupNavigation()
-        setupEdgeToEdge()
+        enableEdgeToEdge()
     }
 
     private fun setupNavigation() {
@@ -37,14 +37,4 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
     }
-
-    private fun setupEdgeToEdge() {
-        enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-    }
-
 }

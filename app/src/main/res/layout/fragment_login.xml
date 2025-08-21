@@ -70,8 +70,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     app:hintEnabled="true"
-                    app:boxStrokeWidth="1dp"
-                    app:boxStrokeColor="@color/mdtp_light_gray"
                     app:hintTextAppearance="@style/TextAppearance.Material3.BodyMedium"
                     app:startIconDrawable="@drawable/ic_email"
                     app:startIconTint="@color/colorPrimary">

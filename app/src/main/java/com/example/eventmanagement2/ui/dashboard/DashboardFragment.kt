@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -65,29 +66,34 @@ class DashboardFragment : Fragment() {
 
     private fun setupViews() {
         binding.apply {
-            // Set up toolbar
-            toolbar.inflateMenu(R.menu.menu_dashboard)
-            toolbar.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.action_refresh -> {
-                        viewModel.refresh()
-                        true
+            // Handle More button with PopupMenu
+            btnMore.setOnClickListener { view ->
+                val popupMenu = PopupMenu(requireContext(), view)
+                popupMenu.menuInflater.inflate(R.menu.menu_dashboard, popupMenu.menu)
+                popupMenu.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.action_refresh -> {
+                            viewModel.refresh()
+                            true
+                        }
+                        R.id.action_logout -> {
+                            showLogoutConfirmation()
+                            true
+                        }
+                        else -> false
                     }
-                    R.id.action_logout -> {
-                        showLogoutConfirmation()
-                        true
-                    }
-                    else -> false
                 }
+                popupMenu.show()
             }
-            
-            // Set up refresh FAB
+
             btnAddEvent.setOnClickListener {
-                /*Navigate to add event page*/
+                // Example with Navigation component
+               /* findNavController().navigate(R.id.action_dashboardFragment_to_addEventFragment)*/
             }
         }
     }
-    
+
+
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { state ->
