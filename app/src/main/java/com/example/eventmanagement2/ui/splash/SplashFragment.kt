@@ -1,0 +1,75 @@
+package com.example.eventmanagement2.ui.splash
+
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
+import com.example.eventmanagement2.R
+import com.example.eventmanagement2.databinding.FragmentSplashBinding
+import com.example.eventmanagement2.ui.auth.AuthViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class SplashFragment : Fragment() {
+
+    private var _binding: FragmentSplashBinding? = null
+    private val binding get() = _binding!!
+    
+    private val viewModel: AuthViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSplashBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        // Delay for the splash screen
+        Handler(Looper.getMainLooper()).postDelayed({
+            checkAuthState()
+        }, 1500) // 1.5 seconds delay
+    }
+
+    private fun checkAuthState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                viewModel.authState.collect { state ->
+                    when (state) {
+                        is com.example.eventmanagement2.data.model.AuthState.Authenticated -> {
+                            // Navigate to dashboard if authenticated
+                            findNavController().navigate(R.id.action_splashFragment_to_dashboardFragment)
+                        }
+                        is com.example.eventmanagement2.data.model.AuthState.Unauthenticated -> {
+                            // Navigate to login if not authenticated
+                            findNavController().navigate(R.id.action_splashFragment_to_loginFragment)
+                        }
+                        else -> {
+                            // Handle other states if needed
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

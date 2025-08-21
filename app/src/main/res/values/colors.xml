@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Basic Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Brand Colors -->
+    <color name="colorPrimary">#90CAF9</color> <!-- Light Blue -->
+    <color name="colorPrimaryVariant">#64B5F6</color> <!-- Slightly deeper Blue -->
+    <color name="colorOnPrimary">#0D1B2A</color>
+
+    <!-- Secondary / Accent Colors -->
+    <color name="colorSecondary">#4FC3F7</color>
+    <color name="colorSecondaryVariant">#29B6F6</color>
+    <color name="colorOnSecondary">#0D1B2A</color>
+
+    <!-- Backgrounds -->
+    <color name="colorBackground">#121212</color> <!-- Dark Background -->
+    <color name="colorOnBackground">#E3F2FD</color> <!-- Light Text -->
+
+    <!-- Surfaces (cards, dialogs, app bar) -->
+    <color name="colorSurface">#1E1E1E</color> <!-- Dark Card/Surface -->
+    <color name="colorOnSurface">#E3F2FD</color> <!-- Light Blueish Text -->
+
+    <!-- Error -->
+    <color name="colorError">#EF9A9A</color>
+    <color name="colorOnError">#0D1B2A</color>
+
+    <!--divider-->
+    <color name="divider">#E7E7E7</color>
+</resources>

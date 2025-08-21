@@ -1,0 +1,148 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Event Management</string>
+    
+    <!-- Auth -->
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="create_new_account">Create New Account</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="full_name">Full Name</string>
+    <string name="password_reset_email_sent">Password reset email sent</string>
+    
+    <!-- Validation -->
+    <string name="email_required">Email is required</string>
+    <string name="invalid_email">Please enter a valid email</string>
+    <string name="password_required">Password is required</string>
+    <string name="password_too_short">Password must be at least %1$d characters</string>
+    <string name="name_required">Name is required</string>
+    <string name="confirm_password_required">Please confirm your password</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    
+    <!-- Dashboard -->
+    <string name="dashboard">Dashboard</string>
+    <string name="total_events">Total Events</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="past">Past</string>
+    <string name="events_by_month">Events by Month</string>
+    <string name="events_by_category">Events by Category</string>
+    <string name="events">Events</string>
+    <string name="no_data_available">No data available</string>
+    <string name="refresh">Refresh</string>
+    <string name="loading">Loading…</string>
+    <string name="error_loading_data">Error loading data</string>
+    
+    <!-- Common -->
+    <string name="app_logo">App Logo</string>
+    <string name="or">OR</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="create_account">Create Account</string>
+    
+    <!-- Menu Items -->
+    <string name="logout">Logout</string>
+    <string name="title_logout">Logout</string>
+    <string name="message_logout_confirmation">Are you sure you want to logout?</string>
+    <string name="title_forgot_password">Forgot Password</string>
+    <string name="message_forgot_password">Enter your email address and we will send you a link to reset your password.</string>
+    <string name="send">Send</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="add_event">Add Event</string>
+    <string name="description">Description\n</string>
+    <string name="title">Title</string>
+    <string name="date_and_time"><![CDATA[Date & Time]]></string>
+    <string name="save">Save</string>
+    <string name="event_image">Event Image</string>
+    <string name="event_date">Date</string>
+    <string name="event_time">Time</string>
+    <string name="event_description">Description</string>
+    <string name="delete_event">Delete Event</string>
+    <string name="confirm_delete_event">Confirm Delete Event</string>
+    <string name="no_maps_app_found">No map found</string>
+    <string name="no_description_provided">No decsription provided</string>
+    <string name="location_not_specified">Location not specified</string>
+    <string name="edit_event">Edit Event</string>
+    <string name="all_events">All Events</string>
+    <string name="confirm_logout">Confirm Logout</string>
+    <string name="open_in_maps">Open map</string>
+    <string name="no_events_found">No Events Found</string>
+    <string name="options">Options</string>
+    
+    <!-- Signup Screen -->
+    <string name="or_continue_with">Or continue with</string>
+    <string name="continue_with_google">Continue with Google</string>
+    
+    <!-- Input Hints -->
+    <string name="hint_full_name">John Doe</string>
+    <string name="hint_email">example@email.com</string>
+    <string name="hint_password">Enter your password</string>
+    <string name="hint_confirm_password">Confirm your password</string>
+    
+    <!-- Button Labels -->
+    <string name="action_create_account">Create My Account</string>
+    <string name="sign_in_instead">Sign in instead</string>
+    
+    <!-- Terms and Conditions -->
+    <string name="terms_agreement">By signing up, you agree to our</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="and">and</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    
+    <!-- Date and Time Formats -->
+    <string name="date_format_month_day_year">MMM dd, yyyy</string>
+    <string name="time_format_12h">hh:mm a</string>
+    <string name="date_time_format_full">MMM dd, yyyy hh:mm a</string>
+    <string name="date_format_month_year">MMM yyyy</string>
+    
+    <!-- Error Messages -->
+    <string name="error_required_fields">All fields are required</string>
+    <string name="error_passwords_not_match">Passwords do not match</string>
+    <string name="error_password_too_short">Password must be at least %d characters</string>
+    <string name="error_invalid_credentials">Invalid email or password</string>
+    <string name="error_auth_failed">Authentication failed</string>
+    <string name="error_weak_password">Password is too weak. Please choose a stronger password.</string>
+    <string name="error_invalid_email">Invalid email format</string>
+    <string name="error_email_already_in_use">An account already exists with this email</string>
+    <string name="error_registration_failed">Registration failed</string>
+    <string name="error_reset_password_failed">Failed to send password reset email</string>
+    <string name="error_loading_events">Failed to load events. Please try again.</string>
+    <string name="error_sign_in_required">Please sign in to view events</string>
+    <string name="error_fetch_user_data">Failed to fetch user data: %s</string>
+    <string name="error_create_user_data">Failed to create user data: %s</string>
+    
+    <!-- Database Collections and Fields -->
+    <string name="db_collection_events">events</string>
+    <string name="db_collection_users">users</string>
+    <string name="db_field_created_by">createdBy</string>
+    <string name="db_field_date">date</string>
+    <string name="db_field_title">title</string>
+    <string name="db_field_description">description</string>
+    <string name="db_field_created_at">createdAt</string>
+    <string name="db_field_updated_at">updatedAt</string>
+    <string name="db_field_name">name</string>
+    <string name="db_field_email">email</string>
+    
+    <!-- Error Messages (continued) -->
+    <string name="error_unknown">An unknown error occurred</string>
+    
+    <!-- Event Model Fields -->
+    <string name="location">location</string>
+    <string name="db_field_category">category</string>
+    <string name="db_field_image_url">imageUrl</string>
+    <string name="category_other">Other</string>
+    <string name="error_name_required">Name requried</string>
+    <string name="error_email_required">Email required</string>
+    <string name="error_password_required">Password required</string>
+    <string name="error_confirm_password_required">Confirm password required</string>
+    <string name="error_passwords_do_not_match">passwords do not match.</string>
+    <string name="logout_confirmation_title">Logout</string>
+    <string name="logout_confirmation_message">Are you sure want to logout?</string>
+</resources>
