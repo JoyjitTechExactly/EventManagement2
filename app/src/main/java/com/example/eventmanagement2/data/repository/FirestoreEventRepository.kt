@@ -22,7 +22,7 @@ class FirestoreEventRepository @Inject constructor(
 
     override fun getEvents(): Flow<List<Event>> = callbackFlow {
         val subscription = eventsCollection
-            .orderBy(context.getString(R.string.db_field_date))
+            .orderBy(context.getString(R.string.db_field_date), com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
@@ -91,7 +91,7 @@ class FirestoreEventRepository @Inject constructor(
     override fun getEventsByUser(userId: String): Flow<List<Event>> = callbackFlow {
         val subscription = eventsCollection
             .whereEqualTo(context.getString(R.string.db_field_created_by), userId)
-            .orderBy(context.getString(R.string.db_field_date))
+            .orderBy(context.getString(R.string.db_field_date), com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)

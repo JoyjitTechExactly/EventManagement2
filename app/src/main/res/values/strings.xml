@@ -102,6 +102,39 @@
     <string name="date_time_format_full">MMM dd, yyyy hh:mm a</string>
     <string name="date_format_month_year">MMM yyyy</string>
     
+    <!-- Event Management -->
+    <!-- Event Management -->
+    <string name="add_event">Add Event</string>
+    <string name="edit_event">Edit Event</string>
+    <string name="delete_event">Delete Event</string>
+    <string name="delete_event_confirmation">Are you sure you want to delete this event?</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="date_and_time">Date &amp; Time</string>
+    <string name="location">Location</string>
+    <string name="save">Save</string>
+    <string name="time">Time</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    
+    <!-- Error Messages -->
+    <string name="error_field_required">This field is required</string>
+    <string name="error_date_in_past">Please select a future date and time</string>
+    <string name="error_saving_event">Error saving event</string>
+    <string name="error_deleting_event">Error deleting event</string>
+    <string name="error_loading_event">Error loading event</string>
+    <string name="error_getting_location">Error getting location. Please try again.</string>
+    
+    <!-- Success Messages -->
+    <string name="event_saved">Event saved successfully</string>
+    <string name="event_deleted">Event deleted successfully</string>
+    
+    <!-- Prompts and Dialogs -->
+    <string name="select_date_and_time">Select Date and Time</string>
+    <string name="select_location">Select Location</string>
+    <string name="location_permission_denied">Location permission denied. Please enable it in app settings.</string>
+    <string name="no_location_selected">No location selected</string>
+    
     <!-- Error Messages -->
     <string name="error_required_fields">All fields are required</string>
     <string name="error_passwords_not_match">Passwords do not match</string>

@@ -55,12 +55,15 @@
             app:popUpTo="@id/loginFragment" />
     </fragment>
 
-    <!-- Main Flow -->
+    <!-- Main App Flow -->
     <fragment
         android:id="@+id/dashboardFragment"
         android:name="com.example.eventmanagement2.ui.dashboard.DashboardFragment"
-        android:label="@string/dashboard"
-        tools:layout="@layout/fragment_dashboard">
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_dashboardFragment_to_eventListFragment"
+            app:destination="@id/eventListFragment" />
         <action
             android:id="@+id/action_global_loginFragment"
             app:destination="@id/loginFragment"
@@ -68,6 +71,45 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-    <!-- Add other navigation destinations here -->
+    <!-- Event Management Flow -->
+    <fragment
+        android:id="@+id/eventListFragment"
+        android:name="com.example.eventmanagement2.ui.events.EventListFragment"
+        android:label="My Events"
+        tools:layout="@layout/fragment_event_list">
+        <action
+            android:id="@+id/action_eventListToAddEditEvent"
+            app:destination="@id/addEditEventFragment" />
+        <action
+            android:id="@+id/action_eventListToEventDetails"
+            app:destination="@id/eventDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/eventDetailFragment"
+        android:name="com.example.eventmanagement2.ui.events.EventDetailFragment"
+        android:label="Event Details"
+        tools:layout="@layout/fragment_event_details">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_eventDetailToAddEditEvent"
+            app:destination="@id/addEditEventFragment"
+            app:popUpTo="@id/eventListFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addEditEventFragment"
+        android:name="com.example.eventmanagement2.ui.events.AddEditEventFragment"
+        android:label="@string/add_event"
+        tools:layout="@layout/fragment_add_edit_event">
+        <argument
+            android:name="eventId"
+            app:argType="string"
+            android:defaultValue=""
+            app:nullable="true" />
+    </fragment>
 
 </navigation>
