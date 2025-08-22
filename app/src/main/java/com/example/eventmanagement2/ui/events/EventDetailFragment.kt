@@ -129,7 +129,7 @@ class EventDetailFragment : Fragment() {
     
     private fun navigateToEdit() {
         args.eventId.let { eventId ->
-            val action = EventDetailFragmentDirections.actionEventDetailToAddEditEvent(eventId)
+            val action = EventDetailFragmentDirections.actionEventDetailToAddOrEditEvent(eventId)
             findNavController().navigate(action)
         }
     }

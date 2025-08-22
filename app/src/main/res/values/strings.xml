@@ -180,4 +180,8 @@
     <string name="logout_confirmation_message">Are you sure want to logout?</string>
     <string name="past_events">Past Events</string>
     <string name="upcoming_events">Upcoming Events</string>
+    <string name="event_updated_successfully">Event Updated Successfully</string>
+    <string name="event_created_successfully">Event Created Successfully</string>
+    <string name="error_updating_event">Error updating event</string>
+    <string name="error_creating_event">Error creating event</string>
 </resources>

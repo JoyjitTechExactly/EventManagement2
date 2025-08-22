@@ -70,8 +70,8 @@
             app:popUpTo="@id/dashboardFragment"
             app:popUpToInclusive="true" />
         <action
-            android:id="@+id/action_dashboardFragment_to_addEditEventFragment"
-            app:destination="@id/addEditEventFragment">
+            android:id="@+id/action_dashboardFragment_to_addOrEditEventFragment"
+            app:destination="@id/addOrEditEventFragment">
             <argument
                 android:name="eventId"
                 app:argType="string"
@@ -92,8 +92,8 @@
             android:defaultValue="ALL"
             app:nullable="false" />
         <action
-            android:id="@+id/action_eventListFragment_to_addEditEventFragment"
-            app:destination="@id/addEditEventFragment">
+            android:id="@+id/action_eventListFragment_to_addOrEditEventFragment"
+            app:destination="@id/addOrEditEventFragment">
             <argument
                 android:name="eventId"
                 app:argType="string"
@@ -114,15 +114,15 @@
             android:name="eventId"
             app:argType="string" />
         <action
-            android:id="@+id/action_eventDetailToAddEditEvent"
-            app:destination="@id/addEditEventFragment"
+            android:id="@+id/action_eventDetailToAddOrEditEvent"
+            app:destination="@id/addOrEditEventFragment"
             app:popUpTo="@id/eventListFragment"
             app:popUpToInclusive="false" />
     </fragment>
 
     <fragment
-        android:id="@+id/addEditEventFragment"
-        android:name="com.example.eventmanagement2.ui.events.AddEditEventFragment"
+        android:id="@+id/addOrEditEventFragment"
+        android:name="com.example.eventmanagement2.ui.events.AddOrEditEventFragment"
         android:label="@string/add_event"
         tools:layout="@layout/fragment_add_edit_event">
         <argument

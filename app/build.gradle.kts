@@ -57,11 +57,16 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
+    
+    // Google Play Services
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    implementation("com.google.android.gms:play-services-base:18.3.0")
+    implementation("com.google.android.gms:play-services-identity:18.0.1")
 
     // Lifecycle components
     val lifecycle_version = "2.8.7"
@@ -95,6 +100,9 @@ dependencies {
 
     // Date-Time Picker
     implementation("com.wdullaer:materialdatetimepicker:4.2.3")
+    
+    // Timber for logging
+    implementation("com.jakewharton.timber:timber:5.0.1")
 
     // Dagger Hilt
     implementation("com.google.dagger:hilt-android:2.57")

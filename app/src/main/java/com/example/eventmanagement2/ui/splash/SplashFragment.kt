@@ -14,8 +14,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.eventmanagement2.R
+import com.example.eventmanagement2.data.model.AuthState
 import com.example.eventmanagement2.databinding.FragmentSplashBinding
 import com.example.eventmanagement2.ui.auth.AuthViewModel
+import com.example.eventmanagement2.util.showError
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -49,11 +51,12 @@ class SplashFragment : Fragment() {
 
     private fun checkAuthState() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Observe authentication state
                 viewModel.authState.collect { state ->
                     when (state) {
-                        is com.example.eventmanagement2.data.model.AuthState.Authenticated -> {
-                            // Navigate to dashboard if authenticated
+                        is AuthState.Authenticated -> {
+                            // Navigate to dashboard on successful authentication
                             val navOptions = NavOptions.Builder()
                                 .setPopUpTo(R.id.splashFragment, true)
                                 .build()
@@ -64,14 +67,21 @@ class SplashFragment : Fragment() {
                                 navOptions
                             )
                         }
-
-                        is com.example.eventmanagement2.data.model.AuthState.Unauthenticated -> {
+                        is AuthState.Error -> {
+                            // Show error message if any
+                            if (state.message != null) {
+                                showError(state.message)
+                            }
+                        }
+                        AuthState.Loading -> {
+                            // Handle loading state if needed
+                        }
+                        AuthState.Unauthenticated -> {
                             // Navigate to login if not authenticated
                             findNavController().navigate(R.id.action_splashFragment_to_loginFragment)
                         }
-
-                        else -> {
-                            // Handle other states if needed
+                        is AuthState.PasswordResetSent -> {
+                            // Handle password reset sent state if needed
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 package com.example.eventmanagement2.data.repository
 
 import com.example.eventmanagement2.data.model.Event
+import com.example.eventmanagement2.util.Result
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
@@ -29,12 +30,12 @@ interface EventRepository {
     /**
      * Create a new event
      */
-    suspend fun createEvent(event: Event): Result<Unit>
+    suspend fun createEvent(event: Event): com.example.eventmanagement2.util.Result<Unit>
     
     /**
      * Update an existing event
      */
-    suspend fun updateEvent(event: Event): Result<Unit>
+    suspend fun updateEvent(event: Event): com.example.eventmanagement2.util.Result<Unit>
     
     /**
      * Delete an event by its ID

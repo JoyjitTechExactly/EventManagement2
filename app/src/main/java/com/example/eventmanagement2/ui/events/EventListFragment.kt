@@ -94,7 +94,7 @@ class EventListFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.fabAddEvent.setOnClickListener {
-            findNavController().navigate(R.id.action_eventListFragment_to_addEditEventFragment)
+            findNavController().navigate(R.id.action_eventListFragment_to_addOrEditEventFragment)
         }
     }
 
@@ -185,7 +185,7 @@ class EventListFragment : Fragment() {
                     btnAddEvent.visibility = View.VISIBLE
                     btnAddEvent.text = getString(R.string.add_event)
                     btnAddEvent.setOnClickListener {
-                        findNavController().navigate(R.id.action_eventListFragment_to_addEditEventFragment)
+                        findNavController().navigate(R.id.action_eventListFragment_to_addOrEditEventFragment)
                     }
                 }
             }

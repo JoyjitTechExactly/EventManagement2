@@ -2,7 +2,6 @@ package com.example.eventmanagement2.ui.events.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.eventmanagement2.data.model.Event
 import com.example.eventmanagement2.data.repository.EventRepository
 import com.example.eventmanagement2.data.repository.FirestoreAuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

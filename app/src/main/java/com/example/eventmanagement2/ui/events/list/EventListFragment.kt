@@ -106,11 +106,11 @@ class EventListFragment : Fragment() {
     private fun setupClickListeners() {
         binding.apply {
             fabAddEvent.setOnClickListener {
-                val action = EventListFragmentDirections.actionEventListFragmentToAddEditEventFragment(eventId = "")
+                val action = EventListFragmentDirections.actionEventListFragmentToAddOrEditEventFragment(eventId = "")
                 findNavController().navigate(action)
             }
             layoutEmptyState.btnAddEvent.setOnClickListener {
-                val action = EventListFragmentDirections.actionEventListFragmentToAddEditEventFragment(eventId = "")
+                val action = EventListFragmentDirections.actionEventListFragmentToAddOrEditEventFragment(eventId = "")
                 findNavController().navigate(action)
             }
         }
@@ -187,7 +187,7 @@ class EventListFragment : Fragment() {
         binding.layoutEmptyState.root.isVisible = true
         binding.layoutEmptyState.btnAddEvent.setOnClickListener{
             // Navigate to AddEditEventFragment with empty eventId for creating a new event
-            val action = EventListFragmentDirections.actionEventListFragmentToAddEditEventFragment("")
+            val action = EventListFragmentDirections.actionEventListFragmentToAddOrEditEventFragment("")
             findNavController().navigate(action)
         }
     }
