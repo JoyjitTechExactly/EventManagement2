@@ -71,7 +71,13 @@
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_dashboardFragment_to_addEditEventFragment"
-            app:destination="@id/addEditEventFragment" />
+            app:destination="@id/addEditEventFragment">
+            <argument
+                android:name="eventId"
+                app:argType="string"
+                android:defaultValue=""
+                app:nullable="true" />
+        </action>
     </fragment>
 
     <!-- Event Management Flow -->
@@ -87,7 +93,13 @@
             app:nullable="false" />
         <action
             android:id="@+id/action_eventListFragment_to_addEditEventFragment"
-            app:destination="@id/addEditEventFragment" />
+            app:destination="@id/addEditEventFragment">
+            <argument
+                android:name="eventId"
+                app:argType="string"
+                android:defaultValue=""
+                app:nullable="true" />
+        </action>
         <action
             android:id="@+id/action_eventListFragment_to_eventDetailFragment"
             app:destination="@id/eventDetailFragment" />

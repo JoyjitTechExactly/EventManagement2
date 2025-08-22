@@ -27,17 +27,17 @@ import java.util.*
 
 @AndroidEntryPoint
 class AddEditEventFragment : Fragment() {
-
     private var _binding: FragmentAddEditEventBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: AddEditEventViewModel by viewModels()
     private val args: AddEditEventFragmentArgs by navArgs()
-    
+
     private val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
     private var selectedDateTime = Calendar.getInstance()
     private var isEditMode = false
-    
+    private var currentEvent: Event? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -50,44 +50,51 @@ class AddEditEventFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        android.util.Log.d("AddEditEventFragment", "onViewCreated called")
+        android.util.Log.d("AddEditEventFragment", "Received eventId: ${args.eventId}")
+
         setupToolbar()
         initClickListeners()
         observeViewModel()
-        
-        // Load event if in edit mode
-        args.eventId?.let { eventId ->
+
+        // Set title based on mode
+        binding.toolbar.title = if (args.eventId.isNullOrEmpty()) {
+            android.util.Log.d("AddEditEventFragment", "Setting up in ADD mode")
+            getString(R.string.add_event)
+        } else {
+            android.util.Log.d("AddEditEventFragment", "Setting up in EDIT mode for eventId: ${args.eventId}")
             isEditMode = true
-            binding.toolbar.title = getString(R.string.edit_event)
-            viewModel.loadEvent(eventId)
-        } ?: run {
-            binding.toolbar.title = getString(R.string.add_event)
+            viewModel.loadEvent(args.eventId!!)
+            getString(R.string.edit_event)
         }
     }
-    
+
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
     }
-    
+
     private fun initClickListeners() {
         // Date/Time Picker
         binding.inputLayoutDateTime.setEndIconOnClickListener {
             showDateTimePicker()
         }
-        
+
         // Location Picker
         binding.inputLayoutLocation.setEndIconOnClickListener {
-            // TODO: Implement location picker
-            showSnackbar("Location picker will be implemented here")
+
         }
-        
+
         // Save Button
         binding.buttonSave.setOnClickListener {
-            saveEvent()
+            if (validateForm()) {
+                saveEvent()
+            }
         }
 
     }
+
     private fun showDateTimePicker() {
         val datePicker = DatePickerDialog(
             requireContext(),
@@ -111,18 +118,18 @@ class AddEditEventFragment : Fragment() {
                 // Update the time
                 selectedDateTime.set(Calendar.HOUR_OF_DAY, hour)
                 selectedDateTime.set(Calendar.MINUTE, minute)
-                
+
                 // If the selected time is in the past, set it to the next day
                 if (selectedDateTime.timeInMillis < System.currentTimeMillis()) {
                     selectedDateTime.add(Calendar.DAY_OF_MONTH, 1)
                     showSnackbar("Selected time is in the past, moved to tomorrow")
                 }
-                
+
                 updateDateTimeField()
             },
             selectedDateTime.get(Calendar.HOUR_OF_DAY),
             selectedDateTime.get(Calendar.MINUTE),
-            false // 24-hour format
+            false
         )
         timePicker.show()
     }
@@ -130,85 +137,99 @@ class AddEditEventFragment : Fragment() {
     private fun updateDateTimeField() {
         binding.editTextDateTime.setText(dateTimeFormat.format(selectedDateTime.time))
     }
-    
+
     private fun validateForm(): Boolean {
         var isValid = true
-        
+
         if (binding.editTextTitle.text.isNullOrBlank()) {
             binding.inputLayoutTitle.error = getString(R.string.error_field_required)
             isValid = false
         } else {
             binding.inputLayoutTitle.error = null
         }
-        
+
         if (binding.editTextDateTime.text.isNullOrBlank()) {
             binding.inputLayoutDateTime.error = getString(R.string.error_field_required)
             isValid = false
         } else {
             binding.inputLayoutDateTime.error = null
         }
-        
+
         // Validate date is not in the past
         if (isValid && selectedDateTime.time.before(Calendar.getInstance().time)) {
             binding.inputLayoutDateTime.error = getString(R.string.error_date_in_past)
-            isValid = false
+            val title = binding.editTextTitle.text.toString().trim()
+            val description = binding.editTextDescription.text.toString().trim()
+            val location = binding.editTextLocation.text.toString().trim()
+
+            if (title.isEmpty()) {
+                binding.inputLayoutTitle.error = getString(R.string.error_field_required)
+                return false
+            }
+            if (description.isEmpty()) {
+                binding.inputLayoutDescription.error = getString(R.string.error_field_required)
+                return false
+            }
+            if (location.isEmpty()) {
+                binding.inputLayoutLocation.error = getString(R.string.error_field_required)
+                return false
+            }
         }
-        
-        return isValid
+        return true
     }
-    
+
     private fun saveEvent() {
-        // Get field values
         val title = binding.editTextTitle.text.toString().trim()
         val description = binding.editTextDescription.text.toString().trim()
         val location = binding.editTextLocation.text.toString().trim()
-        
-        // Reset errors
-        binding.inputLayoutTitle.error = null
-        
-        // Validate fields
-        var hasError = false
-        
-        if (title.isEmpty()) {
-            binding.inputLayoutTitle.error = getString(R.string.error_field_required)
-            hasError = true
+
+        val event = if (isEditMode && currentEvent != null) {
+            currentEvent!!.copy(
+                title = title,
+                description = description,
+                location = location,
+                date = selectedDateTime.time
+            )
+        } else {
+            Event(
+                id = "", // Will be generated by the repository
+                title = title,
+                description = description,
+                location = location,
+                date = selectedDateTime.time,
+                createdAt = Date(),
+                updatedAt = Date()
+            )
         }
-        
-        if (selectedDateTime.timeInMillis < System.currentTimeMillis()) {
-            showSnackbar("Please select a future date and time")
-            hasError = true
-        }
-        
-        if (hasError) return
-        
-        // Create and save event
-        val event = Event(
-            id = args.eventId ?: "",
-            title = title,
-            description = description,
-            date = selectedDateTime.time,
-            location = location
-        )
-        
+
         viewModel.saveEvent(event)
     }
 
     private fun observeViewModel() {
-        // Observe save/update result
-        lifecycleScope.launchWhenStarted {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            // Observe event data for editing
+            viewModel.event.observe(viewLifecycleOwner) { event ->
+                event?.let { 
+                    currentEvent = it
+                    populateForm(it)
+                }
+            }
+
+            // Observe save result
             viewModel.saveResult.collect { result ->
                 when (result) {
-                    is Result.Loading -> binding.progressBar.visibility = View.VISIBLE
+                    is Result.Loading -> {
+                        binding.buttonSave.isEnabled = false
+                        binding.progressBar.isVisible = true
+                    }
                     is Result.Success -> {
-                        binding.progressBar.visibility = View.GONE
-                        showSnackbar(
-                            if (isEditMode) "Event updated successfully"
-                            else "Event created successfully"
-                        )
+                        binding.progressBar.isVisible = false
+                        showSnackbar("Event ${if (isEditMode) "updated" else "saved"} successfully")
                         findNavController().navigateUp()
                     }
                     is Result.Error -> {
-                        binding.progressBar.visibility = View.GONE
+                        binding.buttonSave.isEnabled = true
+                        binding.progressBar.isVisible = false
                         showSnackbar(
                             result.message ?: if (isEditMode) "Error updating event"
                             else "Error creating event"
@@ -216,11 +237,6 @@ class AddEditEventFragment : Fragment() {
                     }
                 }
             }
-        }
-
-        // Observe event data for editing
-        viewModel.event.observe(viewLifecycleOwner) { event ->
-            event?.let { populateForm(it) }
         }
     }
     
@@ -230,11 +246,14 @@ class AddEditEventFragment : Fragment() {
             editTextTitle.setText(event.title)
             editTextDescription.setText(event.description)
             editTextLocation.setText(event.location)
-            
+
             // Set date and time
             selectedDateTime.time = event.date
-            editTextDateTime.setText(dateTimeFormat.format(event.date))
-            
+            updateDateTimeField()
+
+            // Enable save button
+            buttonSave.isEnabled = true
+
             // Update UI for edit mode
             toolbar.title = getString(R.string.edit_event)
         }

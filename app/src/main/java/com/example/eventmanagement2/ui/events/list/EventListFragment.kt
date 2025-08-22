@@ -31,7 +31,7 @@ class EventListFragment : Fragment() {
     private var _binding: FragmentEventListBinding? = null
     private val binding get() = _binding!!
     
-    private val viewModel: EventListViewModel by viewModels(ownerProducer = { requireParentFragment() })
+    private val viewModel: EventListViewModel by viewModels()
     
     private lateinit var adapter: EventAdapter
 
@@ -104,8 +104,16 @@ class EventListFragment : Fragment() {
     }
     
     private fun setupClickListeners() {
-        // FAB click is now handled by the parent fragment
-        // This method can be removed if not needed
+        binding.apply {
+            fabAddEvent.setOnClickListener {
+                val action = EventListFragmentDirections.actionEventListFragmentToAddEditEventFragment(eventId = "")
+                findNavController().navigate(action)
+            }
+            layoutEmptyState.btnAddEvent.setOnClickListener {
+                val action = EventListFragmentDirections.actionEventListFragmentToAddEditEventFragment(eventId = "")
+                findNavController().navigate(action)
+            }
+        }
     }
     
     private fun loadEvents(forceRefresh: Boolean = false) {
@@ -141,7 +149,6 @@ class EventListFragment : Fragment() {
                             binding.swipeRefreshLayout.isRefreshing = false
                             showSnackbar(state.message, Snackbar.LENGTH_SHORT)
                         }
-                        else ->{}
                     }
                 }
             }
@@ -176,9 +183,12 @@ class EventListFragment : Fragment() {
     
     private fun showEmptyState() {
         binding.recyclerView.isVisible = false
+        binding.fabAddEvent.isVisible = false
         binding.layoutEmptyState.root.isVisible = true
         binding.layoutEmptyState.btnAddEvent.setOnClickListener{
-            findNavController().navigate(R.id.action_eventListFragment_to_addEditEventFragment)
+            // Navigate to AddEditEventFragment with empty eventId for creating a new event
+            val action = EventListFragmentDirections.actionEventListFragmentToAddEditEventFragment("")
+            findNavController().navigate(action)
         }
     }
     

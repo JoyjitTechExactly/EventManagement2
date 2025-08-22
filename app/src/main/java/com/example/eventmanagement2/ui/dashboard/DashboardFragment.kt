@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.eventmanagement2.R
 import com.example.eventmanagement2.databinding.FragmentDashboardBinding
 import com.example.eventmanagement2.ui.events.EventFilterType
+import com.example.eventmanagement2.ui.events.list.EventListFragmentDirections
 import com.example.eventmanagement2.ui.events.viewmodel.DashboardViewModel
 import com.example.eventmanagement2.ui.events.viewmodel.EventListState
 import com.example.eventmanagement2.util.showSnackbar
@@ -24,7 +25,7 @@ class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: DashboardViewModel by viewModels()
 
     override fun onCreateView(
@@ -42,7 +43,7 @@ class DashboardFragment : Fragment() {
         observeViewModel()
         viewModel.refreshAll()
     }
-    
+
     private fun setupViews() {
         binding.apply {
             // Set up refresh listener
@@ -52,7 +53,21 @@ class DashboardFragment : Fragment() {
 
             // Set up FAB click listener
             btnAddEvent.setOnClickListener {
-                findNavController().navigate(R.id.action_dashboardFragment_to_addEditEventFragment)
+                val action = DashboardFragmentDirections.actionDashboardFragmentToAddEditEventFragment("")
+                findNavController().navigate(action)
+            }
+
+            // Set up click listeners for event cards
+            totalEvent.setOnClickListener {
+                navigateToEventList(EventFilterType.ALL)
+            }
+
+            upcomingEvent.setOnClickListener {
+                navigateToEventList(EventFilterType.UPCOMING)
+            }
+
+            pastEvent.setOnClickListener {
+                navigateToEventList(EventFilterType.PAST)
             }
 
             // Handle More button with PopupMenu
@@ -75,21 +90,10 @@ class DashboardFragment : Fragment() {
                     }
                 }
                 popupMenu.show()
-
-                totalEvent.setOnClickListener {
-                    navigateToEventList(EventFilterType.ALL)
-                }
-
-                upcomingEvent.setOnClickListener {
-                    navigateToEventList(EventFilterType.UPCOMING)
-                }
-
-                pastEvent.setOnClickListener {
-                    navigateToEventList(EventFilterType.PAST)
-                }
             }
         }
     }
+
     private fun showLogoutConfirmation() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.logout_confirmation_title)
@@ -103,55 +107,74 @@ class DashboardFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        // Observe all events state
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.allEventsState.collect { state ->
                 when (state) {
-                    is EventListState.Loading -> {
-                        if (!binding.swipeRefreshLayout.isRefreshing) {
-                            binding.progressBar.isVisible = true
-                        }
-                    }
                     is EventListState.Success -> {
-                        binding.progressBar.isVisible = false
-                        binding.swipeRefreshLayout.isRefreshing = false
                         binding.totalEventsText.text = state.events.size.toString()
                     }
+
                     is EventListState.Error -> {
-                        binding.progressBar.isVisible = false
-                        binding.swipeRefreshLayout.isRefreshing = false
-                        showErrorSnackbar(state.message)
+                        showSnackbar("Error loading events: ${state.message}")
+                    }
+
+                    else -> { /* Loading state handled by swipe refresh */
+                    }
+                }
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.upcomingEventsState.collect { state ->
+                when (state) {
+                    is EventListState.Success -> {
+                        binding.upcomingEventsText.text = state.events.size.toString()
+                    }
+
+                    is EventListState.Error -> {
+                        showSnackbar("Error loading upcoming events: ${state.message}")
+                    }
+
+                    else -> { /* Loading state handled by swipe refresh */
                     }
                 }
             }
         }
 
-        // Observe upcoming events state
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.upcomingEventsState.collect { state ->
-                if (state is EventListState.Success) {
-                    binding.upcomingEventsText.text = state.events.size.toString()
-                }
-            }
-        }
-
-        // Observe past events state
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.pastEventsState.collect { state ->
-                if (state is EventListState.Success) {
-                    binding.pastEventsText.text = state.events.size.toString()
+                when (state) {
+                    is EventListState.Success -> {
+                        binding.pastEventsText.text = state.events.size.toString()
+                    }
+
+                    is EventListState.Error -> {
+                        showSnackbar("Error loading past events: ${state.message}")
+                    }
+
+                    else -> { /* Loading state handled by swipe refresh */
+                    }
                 }
             }
         }
     }
-    
-    private fun navigateToEventList(type: EventFilterType) {
-        // Navigate to EventListTabFragment and set the initial tab based on the type
-        val action = DashboardFragmentDirections.actionDashboardFragmentToEventListFragment(type.toString())
+
+    private fun navigateToEventList(filterType: EventFilterType) {
+        val action = when (filterType) {
+            EventFilterType.ALL -> DashboardFragmentDirections.actionDashboardFragmentToEventListFragment(
+                EventFilterType.ALL.name
+            )
+
+            EventFilterType.UPCOMING -> DashboardFragmentDirections.actionDashboardFragmentToEventListFragment(
+                EventFilterType.UPCOMING.name
+            )
+
+            EventFilterType.PAST -> DashboardFragmentDirections.actionDashboardFragmentToEventListFragment(
+                EventFilterType.PAST.name
+            )
+        }
         findNavController().navigate(action)
-        
-        // The actual tab switching will be handled by the ViewPager in EventListTabFragment
-        // based on the initial tab position set in the adapter
     }
 
     private fun showErrorSnackbar(message: String) {
@@ -159,7 +182,7 @@ class DashboardFragment : Fragment() {
             showSnackbar(message)
         }
     }
-    
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

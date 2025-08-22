@@ -1,5 +1,6 @@
 package com.example.eventmanagement2.ui.events.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eventmanagement2.data.model.Event
@@ -22,7 +23,8 @@ private const val CACHE_DURATION_MS = 5 * 60 * 1000 // 5 minutes
 
 @HiltViewModel
 class EventListViewModel @Inject constructor(
-    private val eventRepository: EventRepository
+    private val eventRepository: EventRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _allEvents = MutableStateFlow<List<Event>>(emptyList())
