@@ -4,19 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.eventmanagement2.R
-import com.example.eventmanagement2.data.model.Event
 import com.example.eventmanagement2.databinding.FragmentEventListBinding
-import com.example.eventmanagement2.ui.events.adapter.EventAdapter
+import com.example.eventmanagement2.ui.events.list.EventListFragmentDirections
+import com.example.eventmanagement2.ui.events.list.adapter.EventAdapter
+import com.example.eventmanagement2.ui.events.viewmodel.EventListState
 import com.example.eventmanagement2.ui.events.viewmodel.EventListViewModel
 import com.example.eventmanagement2.util.Result
-import com.example.eventmanagement2.util.UiUtils
+import com.example.eventmanagement2.util.showSnackbar
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -27,6 +28,8 @@ class EventListFragment : Fragment() {
     private val viewModel: EventListViewModel by viewModels()
     private lateinit var eventAdapter: EventAdapter
 
+    private var isFirstLoad = true
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,142 +39,161 @@ class EventListFragment : Fragment() {
         return binding.root
     }
 
-    private var isFirstLoad = true
-    
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         setupToolbar()
         setupRecyclerView()
         setupClickListeners()
         setupSwipeRefresh()
         observeEvents()
-        
-        // Initial load
+
         if (isFirstLoad) {
             loadEvents()
             isFirstLoad = false
         }
     }
-    
+
     private fun setupToolbar() {
-        binding.toolbar.title = getString(R.string.app_name)
-        binding.toolbar.inflateMenu(R.menu.menu_events)
+        binding.toolbar.title = getString(R.string.events)
+        binding.toolbar.inflateMenu(R.menu.menu_event_list)
         binding.toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_refresh -> {
                     loadEvents(forceRefresh = true)
                     true
                 }
-                R.id.action_settings -> {
-                    // Navigate to settings
-                    true
-                }
                 else -> false
             }
         }
     }
-    
+
     private fun setupSwipeRefresh() {
-        binding.swipeRefreshLayout.setColorSchemeResources(
-            R.color.purple_500,
-            R.color.teal_200,
-            R.color.purple_700
-        )
-        
         binding.swipeRefreshLayout.setOnRefreshListener {
             loadEvents(forceRefresh = true)
         }
     }
 
     private fun setupRecyclerView() {
-        eventAdapter = EventAdapter { event ->
-            // Navigate to edit event
-            val action = EventListFragmentDirections.actionEventListToAddEditEvent(event.id)
-            findNavController().navigate(action)
-        }
-        
+        eventAdapter = EventAdapter(
+            onEventClick = { event ->
+                val action = EventListFragmentDirections.actionEventListFragmentToEventDetailFragment(event.id)
+                findNavController().navigate(action)
+            },
+            onDeleteClick = { event ->
+                viewModel.deleteEvent(event.id)
+            }
+        )
+
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = eventAdapter
             setHasFixedSize(true)
-            // Add item decoration if needed
-            // addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
     }
 
     private fun setupClickListeners() {
         binding.fabAddEvent.setOnClickListener {
-            val action = EventListFragmentDirections.actionEventListToAddEditEvent()
-            findNavController().navigate(action)
+            findNavController().navigate(R.id.action_eventListFragment_to_addEditEventFragment)
         }
     }
 
     private fun loadEvents(forceRefresh: Boolean = false) {
-        viewModel.loadEvents(forceRefresh)
+        viewModel.loadAllEvents(forceRefresh)
     }
 
     private fun observeEvents() {
-        viewModel.events.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Result.Loading -> {
-                    if (!binding.swipeRefreshLayout.isRefreshing) {
-                        showLoading(true)
+        // Observe events state
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.eventsState.collect { state ->
+                when (state) {
+                    is EventListState.Loading -> {
+                        if (!binding.swipeRefreshLayout.isRefreshing) {
+                            showLoading(true)
+                        }
                     }
-                }
-                is Result.Success -> {
-                    showLoading(false)
-                    binding.swipeRefreshLayout.isRefreshing = false
-                    
-                    result.data?.let { events ->
-                        if (events.isEmpty()) {
+                    is EventListState.Success -> {
+                        showLoading(false)
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        
+                        if (state.events.isEmpty()) {
                             showEmptyView(true)
                         } else {
                             showEmptyView(false)
-                            eventAdapter.submitList(events.sortedByDescending { it.date })
+                            eventAdapter.submitList(state.events.sortedByDescending { it.date })
                         }
-                    } ?: showEmptyView(true)
-                }
-                is Result.Error -> {
-                    showLoading(false)
-                    binding.swipeRefreshLayout.isRefreshing = false
-                    showError(result.message ?: getString(R.string.error_loading_events))
+                    }
+                    is EventListState.Error -> {
+                        showLoading(false)
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        showError(state.message ?: getString(R.string.error_loading_events))
+                    }
                 }
             }
         }
+        
+        // Observe delete events
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.eventDeleted.collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        // Show loading state if needed
+                    }
+                    is Result.Success -> {
+                        result.data?.let { message ->
+                            showSnackbar(message)
+                        }
+                    }
+                    is Result.Error -> {
+                        showError(result.message ?: getString(R.string.error_deleting_event))
+                    }
+                }
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.eventDeleted.collect { result ->
+                when (result) {
+                    is Result.Loading -> showSnackbar("Deleting...")
+                    is Result.Success -> {
+                        showSnackbar("Event deleted successfully")
+                        loadEvents(forceRefresh = true)
+                    }
+                    is Result.Error -> {
+                        showError(result.message ?: "Error deleting event")
+                    }
+                }
+            }
+        }
+
     }
-    
+
     private fun showLoading(isLoading: Boolean) {
         binding.progressBar.isVisible = isLoading
         binding.recyclerView.isVisible = !isLoading
     }
-    
+
     private fun showEmptyView(show: Boolean) {
         binding.apply {
-            textEmpty.isVisible = show
-            imageEmpty.isVisible = show
+            fabAddEvent.isVisible = !show
             recyclerView.isVisible = !show
+            layoutEmptyState.root.isVisible = show
             
             if (show) {
-                textEmpty.text = getString(R.string.no_events_found)
-                textEmptyDescription.text = getString(R.string.no_events_description)
-                buttonCreateEvent.visibility = View.VISIBLE
-            } else {
-                buttonCreateEvent.visibility = View.GONE
+                layoutEmptyState.apply {
+                    btnAddEvent.visibility = View.VISIBLE
+                    btnAddEvent.text = getString(R.string.add_event)
+                    btnAddEvent.setOnClickListener {
+                        findNavController().navigate(R.id.action_eventListFragment_to_addEditEventFragment)
+                    }
+                }
             }
         }
     }
-    
+
     private fun showError(message: String) {
-        if (view != null) {
-            UiUtils.showSnackbar(
-                view = requireView(),
-                message = message,
-                duration = Snackbar.LENGTH_LONG,
-                actionText = getString(R.string.retry),
-                action = { loadEvents(forceRefresh = true) }
-            )
-        }
+        showSnackbar(message = message, duration = Snackbar.LENGTH_LONG)
     }
 
     override fun onDestroyView() {

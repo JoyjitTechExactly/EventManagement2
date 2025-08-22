@@ -1,19 +1,19 @@
 package com.example.eventmanagement2.ui.events.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.eventmanagement2.R
 import com.example.eventmanagement2.data.model.Event
 import com.example.eventmanagement2.data.repository.EventRepository
+import com.example.eventmanagement2.ui.events.EventFilterType
 import com.example.eventmanagement2.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -25,97 +25,191 @@ class EventListViewModel @Inject constructor(
     private val eventRepository: EventRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<Result<List<Event>>>(Result.Loading())
-    val uiState: StateFlow<Result<List<Event>>> = _uiState.asStateFlow()
+    private val _allEvents = MutableStateFlow<List<Event>>(emptyList())
+    private val _filterType = MutableStateFlow(EventFilterType.ALL)
 
-    // Expose LiveData for compatibility with older code
-    private val _events = MutableLiveData<Result<List<Event>>>()
-    val events: LiveData<Result<List<Event>>> = _events
+    private val _eventsState = MutableStateFlow<EventListState>(EventListState.Loading)
+    val eventsState: StateFlow<EventListState> = _eventsState
+
+    // Shared flow for one-time events like delete success
+    private val _eventDeleted = MutableSharedFlow<Result<String>>(replay = 1)
+    val eventDeleted: SharedFlow<Result<String>> = _eventDeleted.asSharedFlow()
 
     private var lastRefreshTime: Long = 0
     private var isRefreshing = false
 
     init {
-        loadEvents()
+        // Combine all events with filter type to get filtered events
+        viewModelScope.launch {
+            combine(_allEvents, _filterType) { events, filterType ->
+                filterEvents(events, filterType)
+            }.collect { filteredEvents ->
+                _eventsState.value = EventListState.Success(filteredEvents)
+            }
+        }
     }
 
     /**
-     * Load events from the repository
-     * @param forceRefresh If true, ignores cache and forces a refresh from the network
+     * Set the current filter type
      */
-    fun loadEvents(forceRefresh: Boolean = false) {
-        val currentTime = System.currentTimeMillis()
-        
-        // Don't refresh if we're already refreshing
-        if (isRefreshing && !forceRefresh) return
-        
-        // Don't refresh if cache is still valid and we're not forcing a refresh
-        if (!forceRefresh && currentTime - lastRefreshTime < CACHE_DURATION_MS) {
-            return
-        }
-        
+    fun setFilterType(filterType: EventFilterType) {
+        _filterType.value = filterType
+    }
+
+    /**
+     * Load all events
+     * @param forceRefresh If true, forces a refresh from the network
+     */
+    fun loadAllEvents(forceRefresh: Boolean = false) {
+        if (!shouldLoad(forceRefresh)) return
+
+        _eventsState.value = EventListState.Loading
         isRefreshing = true
-        _uiState.value = Result.Loading()
-        _events.postValue(Result.Loading())
-        
+
+        viewModelScope.launch {
+            eventRepository.getEvents(forceRefresh)
+                .catch { e ->
+                    _eventsState.value = EventListState.Error(e.message ?: "An error occurred")
+                    isRefreshing = false
+                }
+                .collect { events ->
+                    _allEvents.value = events
+                    lastRefreshTime = System.currentTimeMillis()
+                    isRefreshing = false
+                }
+        }
+    }
+
+    /**
+     * Load upcoming events
+     */
+    fun loadUpcomingEvents(forceRefresh: Boolean = false) {
+        if (!shouldLoad(forceRefresh)) return
+
+        _eventsState.value = EventListState.Loading
+        isRefreshing = true
+
         viewModelScope.launch {
             try {
-                eventRepository.getEvents(forceRefresh).collect { result ->
-                    when (result) {
-                        is Result.Success -> {
-                            val sortedEvents = result.data.sortedByDescending { it.date }
-                            _uiState.value = Result.Success(sortedEvents)
-                            _events.postValue(Result.Success(sortedEvents))
-                            lastRefreshTime = currentTime
-                        }
-                        is Result.Error -> {
-                            val errorMessage = result.message ?: "Error loading events"
-                            _uiState.value = Result.Error(errorMessage)
-                            _events.postValue(Result.Error(errorMessage))
-                        }
-                        is Result.Loading -> {
-                            _uiState.value = Result.Loading()
-                            _events.postValue(Result.Loading())
-                        }
-                    }
+                eventRepository.getUpcomingEvents(forceRefresh).collect { events ->
+                    _allEvents.value = events
+                    _filterType.value = EventFilterType.UPCOMING
+                    lastRefreshTime = System.currentTimeMillis()
+                    isRefreshing = false
                 }
             } catch (e: Exception) {
-                val errorMessage = e.message ?: "An unexpected error occurred"
-                _uiState.value = Result.Error(errorMessage)
-                _events.postValue(Result.Error(errorMessage))
-            } finally {
+                _eventsState.value = EventListState.Error(e.message ?: "Failed to load upcoming events")
                 isRefreshing = false
             }
         }
     }
-    
+
     /**
-     * Delete an event by ID
+     * Load past events
      */
-    fun deleteEvent(eventId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun loadPastEvents(forceRefresh: Boolean = false) {
+        if (!shouldLoad(forceRefresh)) return
+
+        _eventsState.value = EventListState.Loading
+        isRefreshing = true
+
         viewModelScope.launch {
             try {
-                eventRepository.deleteEvent(eventId)
-                // Refresh the list after successful deletion
-                loadEvents(forceRefresh = true)
-                onSuccess()
+                eventRepository.getPastEvents(forceRefresh).collect { events ->
+                    _allEvents.value = events
+                    _filterType.value = EventFilterType.PAST
+                    lastRefreshTime = System.currentTimeMillis()
+                    isRefreshing = false
+                }
             } catch (e: Exception) {
-                onError(e.message ?: "Failed to delete event")
+                _eventsState.value = EventListState.Error(e.message ?: "Failed to load past events")
+                isRefreshing = false
             }
         }
     }
-    
+
+    /**
+     * Load today's events
+     */
+    fun loadTodaysEvents(forceRefresh: Boolean = false) {
+        if (!shouldLoad(forceRefresh)) return
+
+        _eventsState.value = EventListState.Loading
+        isRefreshing = true
+
+        viewModelScope.launch {
+            try {
+                eventRepository.getEvents(forceRefresh).collect { events ->
+                    _allEvents.value = events
+                    _filterType.value = EventFilterType.ALL
+                    lastRefreshTime = System.currentTimeMillis()
+                    isRefreshing = false
+                }
+            } catch (e: Exception) {
+                _eventsState.value = EventListState.Error(e.message ?: "Failed to load today's events")
+                isRefreshing = false
+            }
+        }
+    }
+
+    private fun shouldLoad(forceRefresh: Boolean): Boolean {
+        return !isRefreshing && (forceRefresh || System.currentTimeMillis() - lastRefreshTime > CACHE_DURATION_MS)
+    }
+
+    /**
+     * Delete an event by ID
+     */
+    fun deleteEvent(eventId: String) {
+        viewModelScope.launch {
+            _eventDeleted.emit(Result.Loading)
+            try {
+                eventRepository.deleteEvent(eventId)
+                _eventDeleted.emit(Result.Success("Event deleted successfully"))
+                // Refresh the events list
+                loadAllEvents(forceRefresh = true)
+            } catch (e: Exception) {
+                _eventDeleted.emit(Result.error("Failed to delete Event."))
+            }
+        }
+    }
+
     /**
      * Get events filtered by a specific date
      */
     fun getEventsForDate(date: Date): List<Event> {
-        return (_uiState.value as? Result.Success)?.data?.filter { event ->
-            val eventDate = Calendar.getInstance().apply { time = event.date }
-            val targetDate = Calendar.getInstance().apply { time = date }
-            
-            eventDate.get(Calendar.YEAR) == targetDate.get(Calendar.YEAR) &&
-            eventDate.get(Calendar.MONTH) == targetDate.get(Calendar.MONTH) &&
-            eventDate.get(Calendar.DAY_OF_MONTH) == targetDate.get(Calendar.DAY_OF_MONTH)
-        } ?: emptyList()
+        return when (val state = _eventsState.value) {
+            is EventListState.Success -> {
+                state.events.filter { event ->
+                    val eventDate = Calendar.getInstance().apply { time = event.date }
+                    val targetDate = Calendar.getInstance().apply { time = date }
+
+                    eventDate.get(Calendar.YEAR) == targetDate.get(Calendar.YEAR) &&
+                            eventDate.get(Calendar.MONTH) == targetDate.get(Calendar.MONTH) &&
+                            eventDate.get(Calendar.DAY_OF_MONTH) == targetDate.get(Calendar.DAY_OF_MONTH)
+                }
+            }
+
+            else -> emptyList()
+        }
     }
+
+    /**
+     * Filter events based on the given filter type
+     */
+    private fun filterEvents(events: List<Event>, filterType: EventFilterType): List<Event> {
+        val currentTime = System.currentTimeMillis()
+
+        return when (filterType) {
+            EventFilterType.ALL -> events
+
+            EventFilterType.UPCOMING -> events.filter { event ->
+                event.date.time >= currentTime
+            }
+
+            EventFilterType.PAST -> events.filter { event ->
+                event.date.time < currentTime
+            }
+        }.sortedBy { it.date } // optional: always sort by date
+    }
+
 }

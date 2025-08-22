@@ -34,7 +34,7 @@ class AddEditEventViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-    
+
     private fun handleError(message: String? = null, default: String): String {
         return message ?: default
     }
@@ -43,49 +43,30 @@ class AddEditEventViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                eventRepository.getEventById(eventId).collect { result ->
-                    when (result) {
-                        is Success -> _event.value = result.data
-                        is Error -> _saveResult.value = Error(handleError(result.message, "Error loading event"))
-                        is Loading -> _isLoading.value = true
-                    }
-                }
+                val event = eventRepository.getEventById(eventId)
+                _event.postValue(event)
             } catch (e: Exception) {
-                _saveResult.value = Error(handleError(e.message, "Failed to load event"))
+                _event.postValue(null)
             } finally {
                 _isLoading.value = false
             }
         }
     }
+
 
     fun saveEvent(event: Event) {
         viewModelScope.launch {
             _isLoading.value = true
-            _saveResult.value = Loading()
+            _saveResult.value = Loading
             try {
                 if (event.id.isNotEmpty()) {
                     eventRepository.updateEvent(event)
                 } else {
-                    eventRepository.addEvent(event)
+                    eventRepository.createEvent(event)
                 }
                 _saveResult.value = Success(Unit)
             } catch (e: Exception) {
                 _saveResult.value = Error(handleError(e.message, "Failed to save event"))
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-    fun deleteEvent(eventId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _deleteResult.value = Loading()
-            try {
-                eventRepository.deleteEvent(eventId)
-                _deleteResult.value = Success(Unit)
-            } catch (e: Exception) {
-                _deleteResult.value = Error(handleError(e.message, "Failed to delete event"))
             } finally {
                 _isLoading.value = false
             }

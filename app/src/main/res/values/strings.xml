@@ -55,25 +55,30 @@
     <string name="send">Send</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
-    <string name="add_event">Add Event</string>
-    <string name="description">Description\n</string>
-    <string name="title">Title</string>
-    <string name="date_and_time"><![CDATA[Date & Time]]></string>
-    <string name="save">Save</string>
+
     <string name="event_image">Event Image</string>
     <string name="event_date">Date</string>
     <string name="event_time">Time</string>
+    <!-- Event Related -->
     <string name="event_description">Description</string>
-    <string name="delete_event">Delete Event</string>
-    <string name="confirm_delete_event">Confirm Delete Event</string>
     <string name="no_maps_app_found">No map found</string>
-    <string name="no_description_provided">No decsription provided</string>
+    <string name="no_description_provided">No description provided</string>
     <string name="location_not_specified">Location not specified</string>
     <string name="edit_event">Edit Event</string>
     <string name="all_events">All Events</string>
-    <string name="confirm_logout">Confirm Logout</string>
     <string name="open_in_maps">Open map</string>
-    <string name="no_events_found">No Events Found</string>
+    <string name="no_events_found">No events found</string>
+    <string name="no_upcoming_events">No upcoming events</string>
+    <string name="no_past_events">No past events</string>
+    <string name="delete_event">Delete Event</string>
+    <string name="delete_event_confirmation">Are you sure you want to delete this event?</string>
+    <string name="cannot_delete_past_event">Cannot delete past events</string>
+    <string name="empty_state_subtitle">Get started by creating your first event</string>
+    <string name="loading_events">Loading events…</string>
+    
+    <!-- Common Actions -->
+    <string name="confirm_logout">Confirm Logout</string>
+    <string name="confirm_delete_event">Confirm Delete Event</string>
     <string name="options">Options</string>
     
     <!-- Signup Screen -->
@@ -101,17 +106,12 @@
     <string name="time_format_12h">hh:mm a</string>
     <string name="date_time_format_full">MMM dd, yyyy hh:mm a</string>
     <string name="date_format_month_year">MMM yyyy</string>
-    
-    <!-- Event Management -->
+
     <!-- Event Management -->
     <string name="add_event">Add Event</string>
-    <string name="edit_event">Edit Event</string>
-    <string name="delete_event">Delete Event</string>
-    <string name="delete_event_confirmation">Are you sure you want to delete this event?</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="date_and_time">Date &amp; Time</string>
-    <string name="location">Location</string>
     <string name="save">Save</string>
     <string name="time">Time</string>
     <string name="yes">Yes</string>
@@ -178,4 +178,6 @@
     <string name="error_passwords_do_not_match">passwords do not match.</string>
     <string name="logout_confirmation_title">Logout</string>
     <string name="logout_confirmation_message">Are you sure want to logout?</string>
+    <string name="past_events">Past Events</string>
+    <string name="upcoming_events">Upcoming Events</string>
 </resources>

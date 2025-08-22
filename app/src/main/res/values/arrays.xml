@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="event_categories">
+        <item>Business</item>
+        <item>Conference</item>
+        <item>Concert</item>
+        <item>Exhibition</item>
+        <item>Festival</item>
+        <item>Meeting</item>
+        <item>Networking</item>
+        <item>Party</item>
+        <item>Seminar</item>
+        <item>Workshop</item>
+        <item>Other</item>
+    </string-array>
+</resources>

@@ -69,19 +69,27 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/dashboardFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_addEditEventFragment"
+            app:destination="@id/addEditEventFragment" />
     </fragment>
 
     <!-- Event Management Flow -->
     <fragment
         android:id="@+id/eventListFragment"
-        android:name="com.example.eventmanagement2.ui.events.EventListFragment"
-        android:label="My Events"
+        android:name="com.example.eventmanagement2.ui.events.list.EventListFragment"
+        android:label="Event List"
         tools:layout="@layout/fragment_event_list">
+        <argument
+            android:name="filterType"
+            app:argType="string"
+            android:defaultValue="ALL"
+            app:nullable="false" />
         <action
-            android:id="@+id/action_eventListToAddEditEvent"
+            android:id="@+id/action_eventListFragment_to_addEditEventFragment"
             app:destination="@id/addEditEventFragment" />
         <action
-            android:id="@+id/action_eventListToEventDetails"
+            android:id="@+id/action_eventListFragment_to_eventDetailFragment"
             app:destination="@id/eventDetailFragment" />
     </fragment>
 

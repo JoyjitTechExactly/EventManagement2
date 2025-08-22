@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.eventmanagement2.R
@@ -18,8 +19,7 @@ import com.example.eventmanagement2.data.model.Event
 import com.example.eventmanagement2.databinding.FragmentAddEditEventBinding
 import com.example.eventmanagement2.ui.events.viewmodel.AddEditEventViewModel
 import com.example.eventmanagement2.util.Result
-import com.example.eventmanagement2.util.UiUtils
-import com.example.eventmanagement2.util.UiUtils.showSnackbar
+import com.example.eventmanagement2.util.showSnackbar
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
@@ -51,18 +51,16 @@ class AddEditEventFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         setupToolbar()
-        setupClickListeners()
+        initClickListeners()
         observeViewModel()
         
         // Load event if in edit mode
         args.eventId?.let { eventId ->
             isEditMode = true
             binding.toolbar.title = getString(R.string.edit_event)
-            binding.buttonDelete.visibility = View.VISIBLE
             viewModel.loadEvent(eventId)
         } ?: run {
             binding.toolbar.title = getString(R.string.add_event)
-            binding.buttonDelete.visibility = View.GONE
         }
     }
     
@@ -72,7 +70,7 @@ class AddEditEventFragment : Fragment() {
         }
     }
     
-    private fun setupClickListeners() {
+    private fun initClickListeners() {
         // Date/Time Picker
         binding.inputLayoutDateTime.setEndIconOnClickListener {
             showDateTimePicker()
@@ -88,45 +86,8 @@ class AddEditEventFragment : Fragment() {
         binding.buttonSave.setOnClickListener {
             saveEvent()
         }
-        
-        // Delete Button
-        binding.buttonDelete.setOnClickListener {
-            deleteEvent()
-        }
-    }
-        setupCategorySpinner()
-        setupClickListeners()
-        observeViewModel()
-        
-        // If we're editing an existing event, load its data
-        args.eventId?.let { eventId ->
-            viewModel.loadEvent(eventId)
-            binding.toolbar.title = getString(R.string.edit_event)
-        } ?: run {
-            binding.toolbar.title = getString(R.string.add_event)
-            binding.buttonDelete.isVisible = false
-        }
-    }
 
-    
-    private fun setupCategorySpinner() {
-        val categories = resources.getStringArray(R.array.event_categories).toList()
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.inputLayoutCategory.setAdapter(adapter)
     }
-    
-    private fun setupClickListeners() {
-        binding.buttonSave.setOnClickListener {
-            if (validateForm()) {
-                saveEvent()
-            }
-        }
-        
-        binding.buttonDelete.setOnClickListener {
-            args.eventId?.let { eventId ->
-                viewModel.deleteEvent(eventId)
-            }
     private fun showDateTimePicker() {
         val datePicker = DatePickerDialog(
             requireContext(),
@@ -226,52 +187,37 @@ class AddEditEventFragment : Fragment() {
             title = title,
             description = description,
             date = selectedDateTime.time,
-            location = location,
-            category = "" // Empty since we removed categories
+            location = location
         )
         
         viewModel.saveEvent(event)
     }
-    
+
     private fun observeViewModel() {
         // Observe save/update result
-        viewModel.saveResult.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Result.Loading -> showLoading(true)
-                is Result.Success -> {
-                    showLoading(false)
-                    showSnackbar(
-                        if (isEditMode) "Event updated successfully" 
-                        else "Event created successfully"
-                    )
-                    findNavController().navigateUp()
-                }
-                is Result.Error -> {
-                    showLoading(false)
-                    showSnackbar(
-                        result.message ?: if (isEditMode) "Error updating event" 
-                        else "Error creating event"
-                    )
-                }
-            }
-        }
-        
-        // Observe delete result
-        viewModel.deleteResult.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Result.Loading -> showLoading(true)
-                is Result.Success -> {
-                    showLoading(false)
-                    showSnackbar("Event deleted successfully")
-                    findNavController().navigateUp()
-                }
-                is Result.Error -> {
-                    showLoading(false)
-                    showSnackbar(result.message ?: "Error deleting event")
+        lifecycleScope.launchWhenStarted {
+            viewModel.saveResult.collect { result ->
+                when (result) {
+                    is Result.Loading -> binding.progressBar.visibility = View.VISIBLE
+                    is Result.Success -> {
+                        binding.progressBar.visibility = View.GONE
+                        showSnackbar(
+                            if (isEditMode) "Event updated successfully"
+                            else "Event created successfully"
+                        )
+                        findNavController().navigateUp()
+                    }
+                    is Result.Error -> {
+                        binding.progressBar.visibility = View.GONE
+                        showSnackbar(
+                            result.message ?: if (isEditMode) "Error updating event"
+                            else "Error creating event"
+                        )
+                    }
                 }
             }
         }
-        
+
         // Observe event data for editing
         viewModel.event.observe(viewLifecycleOwner) { event ->
             event?.let { populateForm(it) }
@@ -290,17 +236,16 @@ class AddEditEventFragment : Fragment() {
             editTextDateTime.setText(dateTimeFormat.format(event.date))
             
             // Update UI for edit mode
-            buttonDelete.visibility = View.VISIBLE
             toolbar.title = getString(R.string.edit_event)
         }
     }
     
     private fun showMessage(message: String) {
-        UiUtils.showSnackbar(requireView(), message)
+        showSnackbar(message)
     }
     
     private fun showError(message: String) {
-        UiUtils.showSnackbar(requireView(), message, Snackbar.LENGTH_LONG)
+        showSnackbar( message, Snackbar.LENGTH_SHORT)
     }
     
     override fun onDestroyView() {

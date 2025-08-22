@@ -81,7 +81,7 @@ class EventDetailFragment : Fragment() {
     }
     
     private fun setupClickListeners() {
-        binding.buttonEdit.setOnClickListener {
+        binding.btnEdit.setOnClickListener {
             navigateToEdit()
         }
     }
@@ -110,35 +110,17 @@ class EventDetailFragment : Fragment() {
                 }
             }
         }
-        
-        viewModel.deleteResult.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Result.Loading -> {
-                    // Show loading indicator if needed
-                }
-                is Result.Success -> {
-                    showMessage("Event deleted")
-                    findNavController().navigateUp()
-                }
-                is Result.Error -> {
-                    showError(result.message ?: "Error deleting event")
-                }
 
-                else -> {}
-            }
-        }
     }
     
     private fun populateEventDetails(event: Event) {
-        updateToolbar(event.title, true)
+        binding.toolbar.title = event.title
         
         binding.apply {
             textTitle.text = event.title
             textDescription.text = event.description.ifEmpty { "No description" }
             textLocation.text = event.location.ifEmpty { "Location not specified" }
-            textDate.text = dateFormat.format(event.date)
-            textTime.text = timeFormat.format(event.date)
-            textCategory.text = event.category
+            textDateTime.text = dateFormat.format(event.date)
             
             // Show/hide map button based on location availability
             buttonOpenMap.visibility = if (event.location.isNotBlank()) View.VISIBLE else View.GONE

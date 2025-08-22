@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,7 +21,18 @@ class FirestoreEventRepository @Inject constructor(
 
     private val eventsCollection = firestore.collection(context.getString(R.string.db_collection_events))
 
-    override fun getEvents(): Flow<List<Event>> = callbackFlow {
+    private var cachedEvents: List<Event> = emptyList()
+    private var lastFetchTime: Long = 0
+
+    override fun getEvents(forceRefresh: Boolean): Flow<List<Event>> = callbackFlow {
+        val currentTime = System.currentTimeMillis()
+        
+        // Return cached events if we have them and don't need to force refresh
+        if (!forceRefresh && cachedEvents.isNotEmpty() && 
+            (currentTime - lastFetchTime < CACHE_DURATION_MS)) {
+            trySend(cachedEvents)
+        }
+        
         val subscription = eventsCollection
             .orderBy(context.getString(R.string.db_field_date), com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
@@ -37,10 +49,85 @@ class FirestoreEventRepository @Inject constructor(
                         null
                     }
                 } ?: emptyList()
+                
+                // Update cache
+                cachedEvents = events
+                lastFetchTime = currentTime
+                
                 trySend(events)
             }
 
         awaitClose { subscription.remove() }
+    }
+    
+    override fun getUpcomingEvents(forceRefresh: Boolean): Flow<List<Event>> = callbackFlow {
+        val currentTime = System.currentTimeMillis()
+        
+        // If we have cached events and don't need to force refresh, filter them
+        if (!forceRefresh && cachedEvents.isNotEmpty() && 
+            (currentTime - lastFetchTime < CACHE_DURATION_MS)) {
+            trySend(cachedEvents.filter { it.isUpcoming() })
+        }
+        
+        val subscription = eventsCollection
+            .whereGreaterThanOrEqualTo(context.getString(R.string.db_field_date), Date())
+            .orderBy(context.getString(R.string.db_field_date), com.google.firebase.firestore.Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val events = snapshot?.documents?.mapNotNull { doc ->
+                    try {
+                        Event.fromFirestore(doc.id, doc.data ?: emptyMap(), context)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
+                } ?: emptyList()
+                
+                trySend(events)
+            }
+
+        awaitClose { subscription.remove() }
+    }
+    
+    override fun getPastEvents(forceRefresh: Boolean): Flow<List<Event>> = callbackFlow {
+        val currentTime = System.currentTimeMillis()
+        
+        // If we have cached events and don't need to force refresh, filter them
+        if (!forceRefresh && cachedEvents.isNotEmpty() && 
+            (currentTime - lastFetchTime < CACHE_DURATION_MS)) {
+            trySend(cachedEvents.filter { it.isPast() })
+        }
+        
+        val subscription = eventsCollection
+            .whereLessThan(context.getString(R.string.db_field_date), Date())
+            .orderBy(context.getString(R.string.db_field_date), com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val events = snapshot?.documents?.mapNotNull { doc ->
+                    try {
+                        Event.fromFirestore(doc.id, doc.data ?: emptyMap(), context)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
+                } ?: emptyList()
+                
+                trySend(events)
+            }
+
+        awaitClose { subscription.remove() }
+    }
+    
+    companion object {
+        private const val CACHE_DURATION_MS = 5 * 60 * 1000 // 5 minutes cache duration
     }
 
     override suspend fun getEventById(eventId: String): Event? {
