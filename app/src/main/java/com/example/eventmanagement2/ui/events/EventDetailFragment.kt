@@ -13,6 +13,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.eventmanagement2.R
@@ -20,23 +21,28 @@ import com.example.eventmanagement2.data.model.Event
 import com.example.eventmanagement2.databinding.FragmentEventDetailsBinding
 import com.example.eventmanagement2.ui.events.viewmodel.EventDetailViewModel
 import com.example.eventmanagement2.util.Result
+import com.example.eventmanagement2.util.gone
+import com.example.eventmanagement2.util.showSnackbar
+import com.example.eventmanagement2.util.visible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 @AndroidEntryPoint
 class EventDetailFragment : Fragment() {
-
     private var _binding: FragmentEventDetailsBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: EventDetailViewModel by viewModels()
     private val args: EventDetailFragmentArgs by navArgs()
-    
+
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     private val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
-    
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -48,44 +54,39 @@ class EventDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupMenu()
+        setupToolbar()
         setupClickListeners()
         observeViewModel()
-        
+
         // Load the event data
         viewModel.loadEvent(args.eventId)
     }
 
-    
-    private fun setupMenu() {
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_event_detail, menu)
+    private fun setupToolbar() {
+        (requireActivity() as? androidx.appcompat.app.AppCompatActivity)?.apply {
+            setSupportActionBar(binding.toolbar)
+            supportActionBar?.apply {
+                setDisplayHomeAsUpEnabled(true)
+                setDisplayShowHomeEnabled(true)
+                setHomeAsUpIndicator(R.drawable.ic_arrow_back)
             }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_edit -> {
-                        navigateToEdit()
-                        true
-                    }
-                    R.id.action_delete -> {
-                        showDeleteConfirmation()
-                        true
-                    }
-                    else -> false
-                }
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        }
+        
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
     }
-    
+
     private fun setupClickListeners() {
         binding.btnEdit.setOnClickListener {
             navigateToEdit()
         }
+
+        binding.btnDelete.setOnClickListener {
+            showDeleteConfirmation()
+        }
     }
-    
+
     private fun observeViewModel() {
         viewModel.event.observe(viewLifecycleOwner) { result ->
             when (result) {
@@ -93,6 +94,7 @@ class EventDetailFragment : Fragment() {
                     binding.progressBar.visibility = View.VISIBLE
                     binding.content.visibility = View.GONE
                 }
+
                 is Result.Success -> {
                     binding.progressBar.visibility = View.GONE
                     binding.content.visibility = View.VISIBLE
@@ -103,6 +105,7 @@ class EventDetailFragment : Fragment() {
                         findNavController().navigateUp()
                     }
                 }
+
                 is Result.Error -> {
                     binding.progressBar.visibility = View.GONE
                     showError(result.message ?: "Error loading event")
@@ -111,29 +114,55 @@ class EventDetailFragment : Fragment() {
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.deleteResult.drop(1).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        showSnackbar("Deleting...")
+                    }
+
+                    is Result.Success -> {
+                        showSnackbar("Event deleted successfully")
+                        findNavController().navigateUp()
+                    }
+
+                    is Result.Error -> {
+                        showError(result.message ?: "Error deleting event")
+                    }
+                }
+            }
+        }
+
     }
-    
+
     private fun populateEventDetails(event: Event) {
         binding.toolbar.title = event.title
-        
+
         binding.apply {
             textTitle.text = event.title
             textDescription.text = event.description.ifEmpty { "No description" }
             textLocation.text = event.location.ifEmpty { "Location not specified" }
             textDateTime.text = dateFormat.format(event.date)
-            
+
             // Show/hide map button based on location availability
             buttonOpenMap.visibility = if (event.location.isNotBlank()) View.VISIBLE else View.GONE
+
+            if (event.isPast()) {
+                btnDelete.gone()
+            } else {
+                btnDelete.visible()
+            }
+
         }
     }
-    
+
     private fun navigateToEdit() {
         args.eventId.let { eventId ->
             val action = EventDetailFragmentDirections.actionEventDetailToAddOrEditEvent(eventId)
             findNavController().navigate(action)
         }
     }
-    
+
     private fun showDeleteConfirmation() {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Event")
@@ -144,19 +173,19 @@ class EventDetailFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
-    
+
     private fun showMessage(message: String) {
         view?.let {
             Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
         }
     }
-    
+
     private fun showError(message: String) {
         view?.let {
             Snackbar.make(it, message, Snackbar.LENGTH_LONG).show()
         }
     }
-    
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

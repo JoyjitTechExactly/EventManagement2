@@ -63,22 +63,23 @@ class EventListViewModel @Inject constructor(
      * @param forceRefresh If true, forces a refresh from the network
      */
     fun loadAllEvents(forceRefresh: Boolean = false) {
-        if (!shouldLoad(forceRefresh)) return
-
+        if (isRefreshing && !forceRefresh) return
+        
         _eventsState.value = EventListState.Loading
         isRefreshing = true
 
         viewModelScope.launch {
-            eventRepository.getEvents(forceRefresh)
-                .catch { e ->
-                    _eventsState.value = EventListState.Error(e.message ?: "An error occurred")
-                    isRefreshing = false
-                }
-                .collect { events ->
+            try {
+                eventRepository.getEvents(forceRefresh).collect { events ->
                     _allEvents.value = events
+                    _eventsState.value = EventListState.Success(events)
                     lastRefreshTime = System.currentTimeMillis()
                     isRefreshing = false
                 }
+            } catch (e: Exception) {
+                _eventsState.value = EventListState.Error(e.message ?: "Failed to load events")
+                isRefreshing = false
+            }
         }
     }
 

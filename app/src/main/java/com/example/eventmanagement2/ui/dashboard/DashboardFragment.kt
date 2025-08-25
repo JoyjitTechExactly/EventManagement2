@@ -76,11 +76,6 @@ class DashboardFragment : Fragment() {
                 popupMenu.menuInflater.inflate(R.menu.menu_dashboard, popupMenu.menu)
                 popupMenu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
-                        R.id.action_refresh -> {
-                            viewModel.refreshAll()
-                            true
-                        }
-
                         R.id.action_logout -> {
                             showLogoutConfirmation()
                             true

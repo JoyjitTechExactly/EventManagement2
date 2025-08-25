@@ -28,8 +28,6 @@ class EventListFragment : Fragment() {
     private val viewModel: EventListViewModel by viewModels()
     private lateinit var eventAdapter: EventAdapter
 
-    private var isFirstLoad = true
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,33 +43,14 @@ class EventListFragment : Fragment() {
         setupToolbar()
         setupRecyclerView()
         setupClickListeners()
-        setupSwipeRefresh()
         observeEvents()
 
-        if (isFirstLoad) {
-            loadEvents()
-            isFirstLoad = false
-        }
+        // Always load events when view is created
+        loadEvents(forceRefresh = true)
     }
 
     private fun setupToolbar() {
         binding.toolbar.title = getString(R.string.events)
-        binding.toolbar.inflateMenu(R.menu.menu_event_list)
-        binding.toolbar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.action_refresh -> {
-                    loadEvents(forceRefresh = true)
-                    true
-                }
-                else -> false
-            }
-        }
-    }
-
-    private fun setupSwipeRefresh() {
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            loadEvents(forceRefresh = true)
-        }
     }
 
     private fun setupRecyclerView() {
@@ -83,6 +62,11 @@ class EventListFragment : Fragment() {
             },
             onDeleteClick = { event ->
                 viewModel.deleteEvent(event.id)
+            },
+            onEditClick = { event ->
+                val action = EventListFragmentDirections
+                    .actionEventListFragmentToAddOrEditEventFragment(event.id)
+                findNavController().navigate(action)
             }
         )
 
@@ -111,25 +95,30 @@ class EventListFragment : Fragment() {
             viewModel.eventsState.collect { state ->
                 when (state) {
                     is EventListState.Loading -> {
-                        if (!binding.swipeRefreshLayout.isRefreshing) {
-                            showLoading(true)
-                        }
+                        showLoading(true)
+                        binding.layoutEmptyState.root.visibility = View.GONE
+
                     }
+
                     is EventListState.Success -> {
                         showLoading(false)
-                        binding.swipeRefreshLayout.isRefreshing = false
 
                         if (state.events.isEmpty()) {
                             showEmptyView(true)
                         } else {
                             showEmptyView(false)
-                            eventAdapter.submitList(state.events.sortedByDescending { it.date })
+                            val sortedEvents = state.events.sortedByDescending { it.date }
+                            eventAdapter.submitList(sortedEvents)
+                            binding.recyclerView.scrollToPosition(0)
                         }
                     }
+
                     is EventListState.Error -> {
                         showLoading(false)
-                        binding.swipeRefreshLayout.isRefreshing = false
                         showError(state.message ?: getString(R.string.error_loading_events))
+                        if (eventAdapter.itemCount == 0) {
+                            showEmptyView(true)
+                        }
                     }
                 }
             }
@@ -144,6 +133,7 @@ class EventListFragment : Fragment() {
                         showSnackbar("Event deleted successfully")
                         loadEvents(forceRefresh = true) // reload list
                     }
+
                     is Result.Error -> {
                         showError(result.message ?: "Error deleting event")
                     }

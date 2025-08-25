@@ -96,11 +96,6 @@ class EventListFragment : Fragment() {
             this.adapter = this@EventListFragment.adapter
             setHasFixedSize(true)
         }
-        
-        // Set up swipe to refresh
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            loadEvents(forceRefresh = true)
-        }
     }
     
     private fun setupClickListeners() {
@@ -130,14 +125,11 @@ class EventListFragment : Fragment() {
                 viewModel.eventsState.collect { state ->
                     when (state) {
                         is EventListState.Loading -> {
-                            if (!binding.swipeRefreshLayout.isRefreshing) {
-                                showLoading(true)
-                            }
+                            showLoading(true)
                         }
                         is EventListState.Success -> {
                             showLoading(false)
-                            binding.swipeRefreshLayout.isRefreshing = false
-                            
+
                             if (state.events.isEmpty()) {
                                 showEmptyState()
                             } else {
@@ -146,7 +138,6 @@ class EventListFragment : Fragment() {
                         }
                         is EventListState.Error -> {
                             showLoading(false)
-                            binding.swipeRefreshLayout.isRefreshing = false
                             showSnackbar(state.message, Snackbar.LENGTH_SHORT)
                         }
                     }
