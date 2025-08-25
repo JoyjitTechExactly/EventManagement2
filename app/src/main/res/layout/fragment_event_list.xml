@@ -15,6 +15,7 @@
             style="@style/Widget.MaterialComponents.Toolbar.Primary"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_arrow_back"
             app:title="@string/events"
             app:titleTextColor="@color/white" />
 
@@ -74,7 +75,7 @@
         android:paddingEnd="16dp"
         android:text="@string/add_event"
         android:textColor="@color/white"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorSecondary"
         app:icon="@drawable/ic_add"
         app:iconTint="@color/white" />
 

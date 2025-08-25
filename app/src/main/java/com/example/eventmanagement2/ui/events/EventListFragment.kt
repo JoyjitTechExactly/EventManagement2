@@ -51,6 +51,9 @@ class EventListFragment : Fragment() {
 
     private fun setupToolbar() {
         binding.toolbar.title = getString(R.string.events)
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
     }
 
     private fun setupRecyclerView() {

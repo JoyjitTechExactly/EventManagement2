@@ -33,8 +33,15 @@ class AddOrEditEventFragment : Fragment() {
     private val viewModel: AddEditEventViewModel by viewModels()
     private val args: AddOrEditEventFragmentArgs by navArgs()
 
-    private val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
-    private var selectedDateTime = Calendar.getInstance()
+    private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+    private var selectedDateTime = Calendar.getInstance().apply {
+        // Set initial time to next hour
+        add(Calendar.HOUR_OF_DAY, 1)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
     private var currentEvent: Event? = null
     private val isEditMode get() = !args.eventId.isNullOrEmpty()
 
@@ -76,6 +83,7 @@ class AddOrEditEventFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.inputLayoutDateTime.setEndIconOnClickListener { showDateTimePicker() }
+        binding.editTextDateTime.setOnClickListener { showDateTimePicker() }
         binding.buttonSave.setOnClickListener { saveEvent() }
     }
 
@@ -118,6 +126,21 @@ class AddOrEditEventFragment : Fragment() {
     }
 
     private fun showDateTimePicker() {
+        val now = Calendar.getInstance()
+        
+        // Set minimum date to today
+        val minDate = now.apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        
+        // Initialize with current date if not set
+        if (binding.editTextDateTime.text.isNullOrEmpty()) {
+            selectedDateTime.timeInMillis = now.timeInMillis
+        }
+        
         val datePicker = DatePickerDialog(
             requireContext(),
             { _, year, month, day ->
@@ -128,31 +151,68 @@ class AddOrEditEventFragment : Fragment() {
             selectedDateTime.get(Calendar.MONTH),
             selectedDateTime.get(Calendar.DAY_OF_MONTH)
         )
-        datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
+        
+        // Prevent selecting past dates
+        datePicker.datePicker.minDate = minDate
+        datePicker.setTitle("Select Date")
         datePicker.show()
+    }
+    
+    private fun isToday(calendar: Calendar): Boolean {
+        val today = Calendar.getInstance()
+        return calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+               calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
     }
 
     private fun showTimePicker() {
+        val now = Calendar.getInstance()
+        val isToday = isToday(selectedDateTime)
+        
+        // Set initial time values
+        val initialHour = if (isToday) {
+            // If today, default to current hour + 1, or next hour if minutes > 45
+            val currentHour = now.get(Calendar.HOUR_OF_DAY)
+            if (now.get(Calendar.MINUTE) > 45) currentHour + 2 else currentHour + 1
+        } else {
+            // For future dates, default to 10:00 AM
+            10
+        }
+        
         val timePicker = TimePickerDialog(
             requireContext(),
             { _, hour, minute ->
-                selectedDateTime.set(Calendar.HOUR_OF_DAY, hour)
-                selectedDateTime.set(Calendar.MINUTE, minute)
-                if (selectedDateTime.timeInMillis < System.currentTimeMillis()) {
-                    selectedDateTime.add(Calendar.DAY_OF_MONTH, 1)
-                    showSnackbar("Selected time is in the past, moved to tomorrow")
+                val selectedTime = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, selectedDateTime.get(Calendar.YEAR))
+                    set(Calendar.MONTH, selectedDateTime.get(Calendar.MONTH))
+                    set(Calendar.DAY_OF_MONTH, selectedDateTime.get(Calendar.DAY_OF_MONTH))
+                    set(Calendar.HOUR_OF_DAY, hour)
+                    set(Calendar.MINUTE, minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
                 }
+                
+                // If selected time is in the past, show error and don't update
+                if (isToday && selectedTime.before(now)) {
+                    showSnackbar("Please select a future time")
+                    showTimePicker() // Show time picker again
+                    return@TimePickerDialog
+                }
+                
+                selectedDateTime.timeInMillis = selectedTime.timeInMillis
                 updateDateTimeField()
             },
-            selectedDateTime.get(Calendar.HOUR_OF_DAY),
-            selectedDateTime.get(Calendar.MINUTE),
-            false
+            initialHour,
+            0, // minutes
+            android.text.format.DateFormat.is24HourFormat(requireContext())
         )
+        
+        timePicker.setTitle("Select Time for ${dateFormat.format(selectedDateTime.time)}")
         timePicker.show()
     }
 
     private fun updateDateTimeField() {
-        binding.editTextDateTime.setText(dateTimeFormat.format(selectedDateTime.time))
+        val dateTimeStr = "${dateFormat.format(selectedDateTime.time)} at ${timeFormat.format(selectedDateTime.time)}"
+        binding.editTextDateTime.setText(dateTimeStr)
     }
 
     private fun validateForm(silent: Boolean = false): Boolean {
@@ -192,16 +252,29 @@ class AddOrEditEventFragment : Fragment() {
             isValid = false
         }
 
+        // Validate date/time
         if (dateTime.isEmpty()) {
             binding.inputLayoutDateTime.error = getString(R.string.error_field_required)
             isValid = false
         } else {
-            val now = Calendar.getInstance().apply { add(Calendar.MINUTE, -1) }
+            val now = Calendar.getInstance()
+            // Add 1 minute buffer to account for the time it takes to fill the form
+            now.add(Calendar.MINUTE, 1)
+            
             if (selectedDateTime.before(now)) {
                 binding.inputLayoutDateTime.error = getString(R.string.error_date_in_past)
+                // Auto-correct to the nearest future time
+                selectedDateTime.timeInMillis = now.timeInMillis
+                updateDateTimeField()
                 isValid = false
             }
         }
+        
+        // If not silent mode and form is invalid, show error message
+        if (!silent && !isValid) {
+            showSnackbar("Please fix the errors in the form")
+        }
+        
         return isValid
     }
 
@@ -252,12 +325,7 @@ class AddOrEditEventFragment : Fragment() {
     private fun updateUIForAddMode() {
         binding.apply {
             buttonSave.isEnabled = true
-            selectedDateTime = Calendar.getInstance().apply {
-                add(Calendar.HOUR_OF_DAY, 1)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
+            // Initial date/time is already set in the property initialization
             updateDateTimeField()
         }
     }
