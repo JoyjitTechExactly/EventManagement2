@@ -17,7 +17,8 @@ data class Event(
     val imageUrl: String = "",
     val createdAt: Date = Date(),
     val updatedAt: Date = Date(),
-    val createdBy: String = ""
+    val createdBy: String = "",
+    val userId: String = ""
 ) : Parcelable {
     /**
      * Returns true if the event is upcoming (in the future)
@@ -95,7 +96,8 @@ data class Event(
                     imageUrl = data[context.getString(R.string.db_field_image_url)] as? String ?: "",
                     createdAt = (data[context.getString(R.string.db_field_created_at)] as? com.google.firebase.Timestamp)?.toDate() ?: Date(),
                     updatedAt = (data[context.getString(R.string.db_field_updated_at)] as? com.google.firebase.Timestamp)?.toDate() ?: Date(),
-                    createdBy = data[context.getString(R.string.db_field_created_by)] as? String ?: ""
+                    createdBy = data[context.getString(R.string.db_field_created_by)] as? String ?: "",
+                    userId = data[context.getString(R.string.db_field_user_id)] as? String ?: ""
                 )
             } catch (e: Exception) {
                 Timber.e(e, "Error parsing event with ID: $id")
@@ -116,7 +118,8 @@ data class Event(
                 context.getString(R.string.db_field_image_url) to imageUrl,
                 context.getString(R.string.db_field_created_at) to com.google.firebase.Timestamp(createdAt),
                 context.getString(R.string.db_field_updated_at) to com.google.firebase.Timestamp(updatedAt),
-                context.getString(R.string.db_field_created_by) to createdBy
+                context.getString(R.string.db_field_created_by) to createdBy,
+                context.getString(R.string.db_field_user_id) to userId.ifEmpty { createdBy }
             )
         }
     }

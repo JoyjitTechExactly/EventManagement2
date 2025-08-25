@@ -53,7 +53,7 @@ class DashboardFragment : Fragment() {
 
             // Set up FAB click listener
             btnAddEvent.setOnClickListener {
-                val action = DashboardFragmentDirections.actionDashboardFragmentToAddOrEditEventFragment("")
+                val action = DashboardFragmentDirections.actionDashboardFragmentToAddOrEditEventFragment(null)
                 findNavController().navigate(action)
             }
 

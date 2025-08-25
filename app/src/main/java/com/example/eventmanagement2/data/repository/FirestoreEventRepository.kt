@@ -39,15 +39,17 @@ class FirestoreEventRepository @Inject constructor(
 
     override fun getEvents(forceRefresh: Boolean): Flow<List<Event>> = callbackFlow {
         val currentTime = System.currentTimeMillis()
+        val currentUserId = auth.currentUser?.uid ?: ""
 
         // Return cached events if we have them and don't need to force refresh
         if (!forceRefresh && cachedEvents.isNotEmpty() &&
             (currentTime - lastFetchTime < CACHE_DURATION_MS)
         ) {
-            trySend(cachedEvents)
+            trySend(cachedEvents.filter { it.userId == currentUserId })
         }
 
         val subscription = eventsCollection
+            .whereEqualTo(context.getString(R.string.db_field_user_id), currentUserId)
             .orderBy(context.getString(R.string.db_field_date), Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -77,15 +79,17 @@ class FirestoreEventRepository @Inject constructor(
 
     override fun getUpcomingEvents(forceRefresh: Boolean): Flow<List<Event>> = callbackFlow {
         val currentTime = System.currentTimeMillis()
+        val currentUserId = auth.currentUser?.uid ?: ""
 
         // If we have cached events and don't need to force refresh, filter them
         if (!forceRefresh && cachedEvents.isNotEmpty() &&
             (currentTime - lastFetchTime < CACHE_DURATION_MS)
         ) {
-            trySend(cachedEvents.filter { it.isUpcoming() })
+            trySend(cachedEvents.filter { it.isUpcoming() && it.userId == currentUserId })
         }
 
         val subscription = eventsCollection
+            .whereEqualTo(context.getString(R.string.db_field_user_id), currentUserId)
             .whereGreaterThanOrEqualTo(context.getString(R.string.db_field_date), Timestamp.now())
             .orderBy(context.getString(R.string.db_field_date), Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
@@ -112,15 +116,17 @@ class FirestoreEventRepository @Inject constructor(
 
     override fun getPastEvents(forceRefresh: Boolean): Flow<List<Event>> = callbackFlow {
         val currentTime = System.currentTimeMillis()
+        val currentUserId = auth.currentUser?.uid ?: ""
 
         // If we have cached events and don't need to force refresh, filter them
         if (!forceRefresh && cachedEvents.isNotEmpty() &&
             (currentTime - lastFetchTime < CACHE_DURATION_MS)
         ) {
-            trySend(cachedEvents.filter { it.isPast() })
+            trySend(cachedEvents.filter { it.isPast() && it.userId == currentUserId })
         }
 
         val subscription = eventsCollection
+            .whereEqualTo(context.getString(R.string.db_field_user_id), currentUserId)
             .whereLessThan(context.getString(R.string.db_field_date), Timestamp.now())
             .orderBy(context.getString(R.string.db_field_date), Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
@@ -198,6 +204,7 @@ class FirestoreEventRepository @Inject constructor(
             val newEvent = event.copy(
                 id = eventId,
                 createdBy = currentUserId,
+                userId = currentUserId,
                 createdAt = Date(),
                 updatedAt = Date()
             )

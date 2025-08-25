@@ -77,7 +77,8 @@ class EventListFragment : Fragment() {
     private fun setupRecyclerView() {
         eventAdapter = EventAdapter(
             onEventClick = { event ->
-                val action = EventListFragmentDirections.actionEventListFragmentToEventDetailFragment(event.id)
+                val action = EventListFragmentDirections
+                    .actionEventListFragmentToEventDetailFragment(event.id)
                 findNavController().navigate(action)
             },
             onDeleteClick = { event ->
@@ -94,7 +95,9 @@ class EventListFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.fabAddEvent.setOnClickListener {
-            findNavController().navigate(R.id.action_eventListFragment_to_addOrEditEventFragment)
+            val action = EventListFragmentDirections
+                .actionEventListFragmentToAddOrEditEventFragment(null)
+            findNavController().navigate(action)
         }
     }
 
@@ -115,7 +118,7 @@ class EventListFragment : Fragment() {
                     is EventListState.Success -> {
                         showLoading(false)
                         binding.swipeRefreshLayout.isRefreshing = false
-                        
+
                         if (state.events.isEmpty()) {
                             showEmptyView(true)
                         } else {
@@ -131,34 +134,15 @@ class EventListFragment : Fragment() {
                 }
             }
         }
-        
-        // Observe delete events
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.eventDeleted.collect { result ->
-                when (result) {
-                    is Result.Loading -> {
-                        // Show loading state if needed
-                    }
-                    is Result.Success -> {
-                        result.data?.let { message ->
-                            showSnackbar(message)
-                        }
-                    }
-                    is Result.Error -> {
-                        showError(result.message ?: getString(R.string.error_deleting_event))
-                    }
-                }
-            }
-        }
 
-
+        //Observe delete events
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.eventDeleted.collect { result ->
                 when (result) {
                     is Result.Loading -> showSnackbar("Deleting...")
                     is Result.Success -> {
                         showSnackbar("Event deleted successfully")
-                        loadEvents(forceRefresh = true)
+                        loadEvents(forceRefresh = true) // reload list
                     }
                     is Result.Error -> {
                         showError(result.message ?: "Error deleting event")
@@ -166,7 +150,6 @@ class EventListFragment : Fragment() {
                 }
             }
         }
-
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -176,16 +159,18 @@ class EventListFragment : Fragment() {
 
     private fun showEmptyView(show: Boolean) {
         binding.apply {
-            fabAddEvent.isVisible = !show
+            fabAddEvent.isVisible = true // keep FAB visible
             recyclerView.isVisible = !show
             layoutEmptyState.root.isVisible = show
-            
+
             if (show) {
                 layoutEmptyState.apply {
                     btnAddEvent.visibility = View.VISIBLE
                     btnAddEvent.text = getString(R.string.add_event)
                     btnAddEvent.setOnClickListener {
-                        findNavController().navigate(R.id.action_eventListFragment_to_addOrEditEventFragment)
+                        val action = EventListFragmentDirections
+                            .actionEventListFragmentToAddOrEditEventFragment(null)
+                        findNavController().navigate(action)
                     }
                 }
             }

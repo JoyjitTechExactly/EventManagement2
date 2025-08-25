@@ -9,12 +9,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.eventmanagement2.R
 import com.example.eventmanagement2.data.model.Event
 import com.example.eventmanagement2.databinding.ItemEventBinding
+import com.example.eventmanagement2.util.gone
+import com.example.eventmanagement2.util.visible
 import java.text.SimpleDateFormat
 import java.util.*
 
 class EventAdapter(
     private val onEventClick: (Event) -> Unit,
-    private val onDeleteClick: ((Event) -> Unit)? = null
+    private val onDeleteClick: ((Event) -> Unit)? = null,
+    private val onEditClick: ((Event) -> Unit)? = null,
 ) : ListAdapter<Event, EventAdapter.EventViewHolder>(EventDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
@@ -23,7 +26,7 @@ class EventAdapter(
             parent,
             false
         )
-        return EventViewHolder(binding, onEventClick, onDeleteClick)
+        return EventViewHolder(binding, onEventClick, onDeleteClick, onEditClick)
     }
 
     override fun onBindViewHolder(holder: EventViewHolder, position: Int) {
@@ -34,7 +37,8 @@ class EventAdapter(
     class EventViewHolder(
         private val binding: ItemEventBinding,
         private val onEventClick: (Event) -> Unit,
-        private val onDeleteClick: ((Event) -> Unit)?
+        private val onDeleteClick: ((Event) -> Unit)?,
+        private val onEditClick: ((Event) -> Unit)?,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
@@ -56,11 +60,21 @@ class EventAdapter(
                 btnDelete.visibility = if (isUpcoming) View.VISIBLE else View.GONE
                 
                 if (isUpcoming) {
-                    btnDelete.setOnClickListener {
-                        onDeleteClick?.invoke(event)
+                    btnDelete.apply{
+                        visible()
+                        setOnClickListener {
+                            onDeleteClick?.invoke(event)
+                        }
+                    }
+                    btnEdit.apply{
+                        visible()
+                        setOnClickListener {
+                            onEditClick?.invoke(event)
+                        }
                     }
                 } else {
-                    btnDelete.setOnClickListener(null)
+                    btnDelete.gone()
+                    btnEdit.gone()
                 }
             }
         }

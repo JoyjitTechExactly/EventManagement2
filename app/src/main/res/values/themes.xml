@@ -23,8 +23,9 @@
         <item name="colorOnError">@color/colorOnError</item>
 
         <!-- System bars -->
-        <item name="android:statusBarColor">?attr/colorSurface</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:windowLightStatusBar">true</item>
+
     </style>
 
     <!-- Main theme -->

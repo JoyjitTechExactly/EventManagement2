@@ -119,7 +119,6 @@
     
     <!-- Error Messages -->
     <string name="error_field_required">This field is required</string>
-    <string name="error_date_in_past">Please select a future date and time</string>
     <string name="error_saving_event">Error saving event</string>
     <string name="error_deleting_event">Error deleting event</string>
     <string name="error_loading_event">Error loading event</string>
@@ -155,6 +154,7 @@
     <string name="db_collection_events">events</string>
     <string name="db_collection_users">users</string>
     <string name="db_field_created_by">createdBy</string>
+    <string name="db_field_user_id">userId</string>
     <string name="db_field_date">date</string>
     <string name="db_field_title">title</string>
     <string name="db_field_description">description</string>
@@ -184,4 +184,35 @@
     <string name="event_created_successfully">Event Created Successfully</string>
     <string name="error_updating_event">Error updating event</string>
     <string name="error_creating_event">Error creating event</string>
+    
+    <!-- New validation messages -->
+    <string name="error_title_too_short">Title must be at least 3 characters</string>
+    <string name="error_description_too_short">Description must be at least 10 characters</string>
+    <string name="unknown_error">An unknown error occurred. Please try again.</string>
+    
+    <!-- Date/Time Validation -->
+    <string name="error_invalid_date">Please select a valid date and time</string>
+    <string name="error_date_in_past">Please select a future date and time</string>
+    
+    <!-- Location Validation -->
+    <string name="error_invalid_location">Please enter a valid location</string>
+    
+    <!-- Network Errors -->
+    <string name="error_network_unavailable">Network unavailable. Please check your connection.</string>
+    <string name="error_server_error">Server error. Please try again later.</string>
+    
+    <!-- Success Messages -->
+    <string name="success_event_saved">Event saved successfully</string>
+    <string name="success_event_created">Event created successfully</string>
+    <string name="success_event_updated">Event updated successfully</string>
+    
+    <!-- Button Labels -->
+    <string name="save_changes">Save Changes</string>
+    <string name="create_event">Create Event</string>
+    
+    <!-- Placeholders -->
+    <string name="hint_event_title">Enter event title</string>
+    <string name="hint_event_description">Enter event description</string>
+    <string name="hint_event_location">Enter event location</string>
+    <string name="hint_select_date_time">Select date and time</string>
 </resources>

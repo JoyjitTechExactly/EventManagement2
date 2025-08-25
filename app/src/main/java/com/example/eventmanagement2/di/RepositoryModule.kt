@@ -5,10 +5,10 @@ import com.example.eventmanagement2.data.repository.AuthRepository
 import com.example.eventmanagement2.data.repository.EventRepository
 import com.example.eventmanagement2.data.repository.FirestoreAuthRepository
 import com.example.eventmanagement2.data.repository.FirestoreEventRepository
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
