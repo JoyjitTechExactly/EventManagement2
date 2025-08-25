@@ -29,7 +29,6 @@
     <string name="total_events">Total Events</string>
     <string name="upcoming">Upcoming</string>
     <string name="past">Past</string>
-    <string name="events_by_month">Events by Month</string>
     <string name="events_by_category">Events by Category</string>
     <string name="events">Events</string>
     <string name="no_data_available">No data available</string>
@@ -45,6 +44,14 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="create_account">Create Account</string>
+    
+    <!-- Chart and Filter -->
+    <string name="all">All</string>
+    <string name="business">Business</string>
+    <string name="personal">Personal</string>
+    <string name="completed">Completed</string>
+    <string name="upcoming_events">Upcoming</string>
+    <string name="events_by_month">Events by Month</string>
     
     <!-- Menu Items -->
     <string name="logout">Logout</string>
@@ -179,7 +186,6 @@
     <string name="logout_confirmation_title">Logout</string>
     <string name="logout_confirmation_message">Are you sure want to logout?</string>
     <string name="past_events">Past Events</string>
-    <string name="upcoming_events">Upcoming Events</string>
     <string name="event_updated_successfully">Event Updated Successfully</string>
     <string name="event_created_successfully">Event Created Successfully</string>
     <string name="error_updating_event">Error updating event</string>
@@ -215,4 +221,5 @@
     <string name="hint_event_description">Enter event description</string>
     <string name="hint_event_location">Enter event location</string>
     <string name="hint_select_date_time">Select date and time</string>
+    <string name="no_events_this_month">No Envents this month.</string>
 </resources>

@@ -2,6 +2,7 @@ package com.example.eventmanagement2.ui.events.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.eventmanagement2.data.model.Event
 import com.example.eventmanagement2.data.repository.EventRepository
 import com.example.eventmanagement2.data.repository.FirestoreAuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,10 @@ class DashboardViewModel @Inject constructor(
     private val _pastEventsState = MutableStateFlow<EventListState>(EventListState.Loading)
     val pastEventsState: StateFlow<EventListState> = _pastEventsState
 
+    // New state just for chart usage
+    private val _chartEventsState = MutableStateFlow<EventListState>(EventListState.Loading)
+    val chartEventsState: StateFlow<EventListState> = _chartEventsState
+
     init {
         loadAllEvents()
         loadUpcomingEvents()
@@ -44,9 +49,11 @@ class DashboardViewModel @Inject constructor(
             try {
                 eventRepository.getEvents(forceRefresh).collectLatest { events ->
                     _allEventsState.value = EventListState.Success(events)
+                    _chartEventsState.value = EventListState.Success(events) // also update chart
                 }
             } catch (e: Exception) {
                 _allEventsState.value = EventListState.Error(e.message ?: "An error occurred")
+                _chartEventsState.value = EventListState.Error(e.message ?: "An error occurred")
             }
         }
     }

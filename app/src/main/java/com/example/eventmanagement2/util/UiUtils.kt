@@ -6,6 +6,8 @@ import android.view.inputmethod.InputMethodManager
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 fun Fragment.hideKeyboard() {
     view?.let { activity?.hideKeyboard(it) }
@@ -56,5 +58,14 @@ fun Fragment.showError(
     action: (() -> Unit)? = null
 ) {
     showSnackbar(messageRes, Snackbar.LENGTH_LONG, actionTextRes, action)
+}
+
+fun parseDateToMillis(dateString: String): Long? {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    return try {
+        dateFormat.parse(dateString)?.time
+    } catch (e: Exception) {
+        null
+    }
 }
 

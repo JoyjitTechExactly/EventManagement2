@@ -28,4 +28,17 @@
 
     <!--divider-->
     <color name="divider">#E7E7E7</color>
+
+    <!-- Chart Colors -->
+    <color name="green_500">#4CAF50</color>
+    <color name="blue_500">#2196F3</color>
+
+    <!-- Chip Colors -->
+    <color name="chip_background_checked">#2196F3</color>
+    <color name="chip_background_unchecked">#1E1E1E</color>
+    <color name="chip_stroke_checked">#2196F3</color>
+    <color name="chip_stroke_unchecked">#757575</color>
+
+    <!-- Selector Colors -->
+    <color name="colorPrimaryLight">#64B5F6</color>
 </resources>
