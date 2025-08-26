@@ -18,7 +18,6 @@ import com.example.eventmanagement2.ui.events.EventFilterType
 import com.example.eventmanagement2.ui.events.viewmodel.DashboardViewModel
 import com.example.eventmanagement2.ui.events.viewmodel.EventListState
 import com.example.eventmanagement2.util.ChartUtils
-import com.example.eventmanagement2.util.parseDateToMillis
 import com.example.eventmanagement2.util.showSnackbar
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -35,7 +34,6 @@ class DashboardFragment : Fragment() {
     private val viewModel: DashboardViewModel by viewModels()
 
     private var allEvents: List<Event> = emptyList()
-    private var currentFilter: String = "all"
     private var selectedMonth: Int = Calendar.getInstance().get(Calendar.MONTH) + 1
     private val monthNames = arrayOf(
         "January", "February", "March", "April", "May", "June",
@@ -178,7 +176,14 @@ class DashboardFragment : Fragment() {
                 isChecked = (index + 1) == selectedMonth
                 setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelLarge)
                 setChipBackgroundColorResource(if (isChecked) R.color.colorSecondary else R.color.colorBackground)
-                setTextColor(requireActivity().getColor(if (isChecked) R.color.white else  R.color.colorSecondary))
+                setTextColor(requireActivity().getColor(if (isChecked) R.color.white else R.color.colorSecondary))
+                // Add padding to chips for better touch target
+                setPadding(
+                    resources.getDimensionPixelSize(R.dimen.chip_horizontal_padding),
+                    resources.getDimensionPixelSize(R.dimen.chip_vertical_padding),
+                    resources.getDimensionPixelSize(R.dimen.chip_horizontal_padding),
+                    resources.getDimensionPixelSize(R.dimen.chip_vertical_padding)
+                )
             }
 
             chip.setOnClickListener {
@@ -191,13 +196,17 @@ class DashboardFragment : Fragment() {
                         val isSelected = child.id == chip.id
                         child.isChecked = isSelected
                         child.setChipBackgroundColorResource(if (isSelected) R.color.colorSecondary else R.color.colorBackground)
-                        child.setTextColor(requireActivity().getColor(if (isSelected) R.color.white else  R.color.colorSecondary))
+                        child.setTextColor(requireActivity().getColor(if (isSelected) R.color.white else R.color.colorSecondary))
                     }
                 }
                 
-                // Auto-scroll to the selected chip
-                binding.categoryFilterChipGroup.post {
-                    binding.categoryFilterChipGroup.scrollTo(chip.left - (binding.categoryFilterChipGroup.width - chip.width) / 2, 0)
+                // Smooth scroll to the selected chip with padding
+                binding.chipScrollView.post {
+                    val scrollX = chip.left - (binding.chipScrollView.width - chip.width) / 2
+                    binding.chipScrollView.smoothScrollTo(
+                        maxOf(0, scrollX),
+                        0
+                    )
                 }
             }
             

@@ -212,7 +212,7 @@ class EventListViewModel @Inject constructor(
             EventFilterType.PAST -> events.filter { event ->
                 event.date.time < currentTime
             }
-        }.sortedBy { it.date } // optional: always sort by date
+        }.sortedByDescending { it.date } // Sort in reverse chronological order (newest first)
     }
 
 }
