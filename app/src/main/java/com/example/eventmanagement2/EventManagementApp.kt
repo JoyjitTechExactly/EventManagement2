@@ -28,7 +28,7 @@ class EventManagementApp : Application() {
                 Timber.d("FirebaseApp initialized successfully")
             }
             
-            // Configure Firestore
+            // Configure FireStore
             val db = FirebaseFirestore.getInstance()
             val settings = FirebaseFirestoreSettings.Builder()
                 .setPersistenceEnabled(true)
@@ -36,7 +36,7 @@ class EventManagementApp : Application() {
                 .build()
             db.firestoreSettings = settings
             
-            Timber.d("Firestore configured with offline persistence")
+            Timber.d("FireStore configured with offline persistence")
             
         } catch (e: Exception) {
             Timber.e(e, "Error initializing Firebase")

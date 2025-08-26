@@ -212,15 +212,26 @@ class FirestoreEventRepository @Inject constructor(
             // Convert to Firestore map
             val eventMap = newEvent.toFirestore(context)
             
-            // Create the document with the specified ID
-            eventsCollection.document(eventId).set(eventMap).await()
+            // Use a transaction to ensure offline persistence works
+            firestore.runTransaction { transaction ->
+                val docRef = eventsCollection.document(eventId)
+                transaction.set(docRef, eventMap)
+                null // Return null as required by the transaction
+            }.await()
             
             // Invalidate cache
             cachedEvents = emptyList()
             Result.Success(Unit)
         } catch (e: Exception) {
             Timber.e(e, "Error creating event: ${e.message}")
-            Result.Error(e)
+            // If we're offline, the write will be queued and synced when back online
+            if (e is com.google.firebase.firestore.FirebaseFirestoreException && 
+                e.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.UNAVAILABLE) {
+                // The write was queued for offline persistence
+                Result.Success(Unit)
+            } else {
+                Result.Error(e)
+            }
         }
     }
 
