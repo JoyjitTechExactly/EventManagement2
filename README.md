@@ -1,6 +1,6 @@
 # Event Management App
 
-A modern Android application for managing events, built with Kotlin and Jetpack Compose. The app provides a seamless experience for creating, viewing, and managing events with a clean and intuitive user interface.
+A modern Android application for managing events, built with Kotlin and Xml. The app provides a seamless experience for creating, viewing, and managing events with a clean and intuitive user interface.
 
 ## ✨ Features
 
@@ -18,9 +18,8 @@ A modern Android application for managing events, built with Kotlin and Jetpack 
 - **Dependency Injection**: Hilt
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Authentication
-- **UI**: Jetpack Compose, Material Design 3
+- **UI**: Xml, Material Design 3
 - **Navigation**: Navigation Component
-- **Image Loading**: Coil
 - **Coroutines & Flow**: For asynchronous operations
 
 ## 🚀 Getting Started
@@ -36,7 +35,7 @@ A modern Android application for managing events, built with Kotlin and Jetpack 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/EventManagement2.git
+   git clone https://github.com/JoyjitTechExactly/EventManagement2.git
    cd EventManagement2
    ```
 
@@ -55,7 +54,7 @@ A modern Android application for managing events, built with Kotlin and Jetpack 
 4. **Set up Firestore Database**
    - Go to Firestore Database in Firebase Console
    - Create a new database in test mode (for development)
-   - Create a collection named "events"
+   - Create a collection named  "users", "events"
 
 5. **Build and Run**
    - Open the project in Android Studio
@@ -94,14 +93,10 @@ app/
 │   │   └── res/                # Resources (layouts, drawables, strings, etc.)
 ```
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📧 Contact
 
-For any questions or feedback, please contact [your-email@example.com](mailto:your-email@example.com)
+For any questions or feedback, please contact [joyjit.techexactly@gmail.com]
