@@ -27,7 +27,7 @@ A modern Android application for managing events, built with Kotlin and Xml. The
 ### Prerequisites
 
 - Android Studio Meerkat | 2024.3.1 Patch 1
-- Android Compile SDK 36 
+- Android Compile SDK 36 (Android 16)
 - Android Target SDK 35 (Android 15)
 - Kotlin 2.0.21 
 - Gradle 8.11.1 
